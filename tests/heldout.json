@@ -1,0 +1,488 @@
+[
+ {
+  "exercise": "anagrams",
+  "source": "def anagrams(a, b):\n    a = a.replace(\" \", \"\")\n    b = b.replace(\" \", \"\")\n    return sorted(a) == sorted(b)\n",
+  "cause": "Case is not ignored: the texts are never lowercased, so Listen/Silent compare as different.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "anagrams",
+  "source": "def anagrams(a, b):\n    a = a.lower().replace(\" \", \"\")\n    b = b.lower().replace(\" \", \"\")\n    if len(a) != len(b):\n        return False\n    for ch in a:\n        if ch not in b:\n            return False\n    return True\n",
+  "cause": "Only checks that the two texts have the same length and the same set of letters, ignoring how many times each letter occurs.",
+  "kind": "misread-problem"
+ },
+ {
+  "exercise": "anagrams",
+  "source": "def anagrams(a, b):\n    a = a.lower().replace(\" \", \"\")\n    b = b.lower().replace(\" \", \"\")\n    if sorted(a) == sorted(b)\n        return True\n    return False\n",
+  "cause": "Missing colon after the if line, a SyntaxError.",
+  "kind": "syntax"
+ },
+ {
+  "exercise": "average",
+  "source": "def average(numbers):\n    total = 0\n    for n in numbers:\n        total = total + n\n    return total / len(numbers)\n",
+  "cause": "Empty list is not handled, so dividing by len(numbers)==0 raises ZeroDivisionError.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "average",
+  "source": "def average(numbers):\n    if len(numbers) == 0:\n        return 0.0\n    s = 0\n    for n in numbers:\n        s += n\n    return s // len(numbers)\n",
+  "cause": "Uses floor division // so the mean is rounded down instead of being a true float.",
+  "kind": "wrong-operator"
+ },
+ {
+  "exercise": "average",
+  "source": "def average(numbers):\n    if len(numbers) == 0:\n        return 0.0\n    total = 0\n    for n in numbers:\n        total += n\n        return total / len(numbers)\n",
+  "cause": "The return is inside the for loop, so only the first number is added and divided.",
+  "kind": "return-placement"
+ },
+ {
+  "exercise": "balanced_brackets",
+  "source": "def balanced_brackets(text):\n    opens = 0\n    closes = 0\n    for ch in text:\n        if ch in \"([{\":\n            opens += 1\n        if ch in \")]}\":\n            closes += 1\n    return opens == closes\n",
+  "cause": "Only counts opening vs closing brackets and never checks kind or order, so \"(]\" and \")(\" pass.",
+  "kind": "misread-problem"
+ },
+ {
+  "exercise": "balanced_brackets",
+  "source": "def balanced_brackets(text):\n    stack = []\n    match = {\")\": \"(\", \"]\": \"[\", \"}\": \"{\"}\n    for ch in text:\n        if ch in \"([{\":\n            stack.append(ch)\n        elif ch in \")]}\":\n            if len(stack) == 0:\n                return False\n            top = stack.pop()\n            if top != match[ch]:\n                return False\n    return True\n",
+  "cause": "Never checks the stack is empty at the end, so unclosed openers like \"(()\" return True.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "balanced_brackets",
+  "source": "def balanced_bracket(text):\n    stack = []\n    match = {\")\": \"(\", \"]\": \"[\", \"}\": \"{\"}\n    for ch in text:\n        if ch in \"([{\":\n            stack.append(ch)\n        elif ch in match:\n            if not stack or stack.pop() != match[ch]:\n                return False\n    return len(stack) == 0\n",
+  "cause": "The function is named balanced_bracket (missing s), so the required name does not exist.",
+  "kind": "wrong-function-name"
+ },
+ {
+  "exercise": "binary_search",
+  "source": "def binary_search(items, target):\n    low = 0\n    high = len(items) - 1\n    while low < high:\n        mid = (low + high) // 2\n        if items[mid] == target:\n            return mid\n        elif items[mid] < target:\n            low = mid + 1\n        else:\n            high = mid - 1\n    return -1\n",
+  "cause": "The loop condition is low < high, so the last remaining candidate is never examined (e.g. a single-item list).",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "binary_search",
+  "source": "def binary_search(items, target):\n    low = 0\n    high = len(items) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if items[mid] == target:\n            return mid\n        elif items[mid] < target:\n            low = mid\n        else:\n            high = mid\n    return -1\n",
+  "cause": "low = mid and high = mid never move past mid, so the search range stops shrinking and the loop never ends for missing targets.",
+  "kind": "infinite-loop"
+ },
+ {
+  "exercise": "binary_search",
+  "source": "def binary_search(items, target):\n    low = 0\n    high = len(items) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if items[mid] = target:\n            return mid\n        elif items[mid] < target:\n            low = mid + 1\n        else:\n            high = mid - 1\n    return -1\n",
+  "cause": "Uses a single = in the if comparison (if items[mid] = target), a SyntaxError.",
+  "kind": "syntax"
+ },
+ {
+  "exercise": "caesar",
+  "source": "def caesar(text, shift):\n    out = \"\"\n    for ch in text:\n        if ch.isalpha():\n            c = ch.lower()\n            out += chr((ord(c) - ord(\"a\") + shift) % 26 + ord(\"a\"))\n        else:\n            out += ch\n    return out\n",
+  "cause": "Capital letters are lowercased by the loop logic: ch.lower() is shifted so uppercase input comes back lowercase.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "caesar",
+  "source": "def caesar(text, shift):\n    out = \"\"\n    for ch in text:\n        if ch.islower():\n            out += chr(ord(ch) + shift)\n        elif ch.isupper():\n            out += chr(ord(ch) + shift)\n        else:\n            out += ch\n    return out\n",
+  "cause": "No modulo wrap-around: letters past z are shifted into punctuation characters instead of wrapping to a.",
+  "kind": "missing-wraparound"
+ },
+ {
+  "exercise": "caesar",
+  "source": "def caesar(text, shift):\n    out = \"\"\n    for ch in text:\n        if ch.islower():\n            out += chr((ord_val(ch) - 97 + shift) % 26 + 97)\n        elif ch.isupper():\n            out += chr((ord_val(ch) - 65 + shift) % 26 + 65)\n        else:\n            out += ch\n    return out\n",
+  "cause": "Calls ord_val(...) which is not defined; the built-in is ord, giving a NameError.",
+  "kind": "name"
+ },
+ {
+  "exercise": "char_frequency",
+  "source": "def char_frequency(text):\n    freq = {}\n    for ch in text:\n        if ch in freq:\n            freq[ch] += 1\n        else:\n            freq[ch] = 1\n        return freq\n    return freq\n",
+  "cause": "The return is indented inside the for loop, so only the first character is counted.",
+  "kind": "return-placement"
+ },
+ {
+  "exercise": "char_frequency",
+  "source": "def char_frequency(text):\n    freq = {}\n    for ch in text.lower():\n        if ch in freq:\n            freq[ch] += 1\n        else:\n            freq[ch] = 1\n    return freq\n",
+  "cause": "Text is lowercased first, so \"A\" and \"a\" are merged into one key.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "char_frequency",
+  "source": "def char_freq(text):\n    freq = {}\n    for ch in text:\n        freq[ch] = freq.get(ch, 0) + 1\n    return freq\n",
+  "cause": "The function is called char_freq instead of char_frequency.",
+  "kind": "wrong-function-name"
+ },
+ {
+  "exercise": "collatz_steps",
+  "source": "def collatz_steps(n):\n    steps = 1\n    while n != 1:\n        if n % 2 == 0:\n            n = n // 2\n        else:\n            n = n * 3 + 1\n        steps += 1\n    return steps\n",
+  "cause": "steps starts at 1 instead of 0, so every answer is one too large.",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "collatz_steps",
+  "source": "def collatz_steps(n):\n    steps = 0\n    while n > 1:\n        if n % 2 == 0:\n            n = n // 2\n            steps += 1\n        else:\n            n = 3 * n + 1\n            steps += 2\n    return steps\n",
+  "cause": "The odd branch adds 2 to steps instead of 1, so odd steps are double counted.",
+  "kind": "wrong-constant"
+ },
+ {
+  "exercise": "collatz_steps",
+  "source": "def collatz_steps(n):\n    steps = 0\n    while n != 1\n        if n % 2 == 0:\n            n = n // 2\n        else:\n            n = 3 * n + 1\n        steps += 1\n    return steps\n",
+  "cause": "The while line is missing its closing colon, a SyntaxError.",
+  "kind": "syntax"
+ },
+ {
+  "exercise": "count_vowels",
+  "source": "def count_vowels(text):\n    count = 0\n    for ch in text:\n        if ch in \"aeiou\":\n            count += 1\n    return count\n",
+  "cause": "Only lowercase vowels are checked, so capital vowels are not counted.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "count_vowels",
+  "source": "def count_vowels(text):\n    count = 0\n    for i in range(1, len(text)):\n        if text[i].lower() in \"aeiou\":\n            count += 1\n    return count\n",
+  "cause": "The loop runs over range(1, len(text)) so the first character is skipped.",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "count_vowels",
+  "source": "def count_vowels(text):\n    count = 0\n    for ch in text.lower():\n        if ch in \"aeiou\":\n            count = 1\n    return count\n",
+  "cause": "Uses = instead of += (count = 1), so the result is at most 1 instead of the total.",
+  "kind": "wrong-operator"
+ },
+ {
+  "exercise": "digit_sum",
+  "source": "def digit_sum(n):\n    total = 0\n    while n > 0:\n        total = total + n % 10\n        n = n // 10\n    return total\n",
+  "cause": "Negative numbers are not handled: n > 0 is false at once for -123, so the result is 0.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "digit_sum",
+  "source": "def digit_sum(n):\n    total = 0\n    for d in str(abs(n)):\n        total += d\n    return total\n",
+  "cause": "Converts to a string and adds the characters without int(), so it concatenates/raises a TypeError instead of summing numbers.",
+  "kind": "type"
+ },
+ {
+  "exercise": "digit_sum",
+  "source": "def digit_sum(n):\n    n = abs(n)\n    total = 0\n    while n > 0:\n        total += n % 10\n        n = n // 100\n    return total\n",
+  "cause": "Divides by 100 instead of 10, so every second digit is skipped.",
+  "kind": "wrong-constant"
+ },
+ {
+  "exercise": "factorial",
+  "source": "def factorial(n):\n    result = 1\n    for i in range(1, n):\n        result *= i\n    return result\n",
+  "cause": "range(1, n) stops before n, so the last factor n is never multiplied in.",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "factorial",
+  "source": "def factorial(n):\n    result = 0\n    for i in range(1, n + 1):\n        result = result * i\n    return result\n",
+  "cause": "result starts at 0, so the product is always 0.",
+  "kind": "wrong-initial-value"
+ },
+ {
+  "exercise": "factorial",
+  "source": "def factorial(n):\n    if n == 0:\n        return 0\n    return n * factorial(n - 1)\n",
+  "cause": "The recursion has no base case for 0 and returns 0 when n == 0 instead of 1, so 0! is 0 and every larger factorial collapses to 0.",
+  "kind": "recursion-base-case"
+ },
+ {
+  "exercise": "fibonacci",
+  "source": "def fibonacci(n):\n    a = 0\n    b = 1\n    for i in range(n):\n        a, b = b, a + b\n    return b\n",
+  "cause": "Returns b instead of a after the loop, so every result is the next Fibonacci number.",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "fibonacci",
+  "source": "def fibonacci(n):\n    a = 0\n    b = 1\n    for i in range(n):\n        a = b\n        b = a + b\n    return a\n",
+  "cause": "Updates a and b one after the other instead of together, so b uses the new a and the sequence doubles.",
+  "kind": "wrong-assignment"
+ },
+ {
+  "exercise": "fibonacci",
+  "source": "def fibonacci(n):\n    if n <= 1:\n        return 1\n    prev, cur = 1, 1\n    for i in range(2, n):\n        prev, cur = cur, prev + cur\n    return cur\n",
+  "cause": "Base case only handles n == 1 so n == 0 falls into the loop and returns 1 instead of 0.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "fizzbuzz",
+  "source": "def fizzbuzz(n):\n    out = []\n    for i in range(1, n + 1):\n        if i % 3 == 0:\n            out.append(\"Fizz\")\n        elif i % 5 == 0:\n            out.append(\"Buzz\")\n        elif i % 15 == 0:\n            out.append(\"FizzBuzz\")\n        else:\n            out.append(str(i))\n    return out\n",
+  "cause": "The Fizz and Buzz checks come before the divisible-by-15 check, so FizzBuzz is never produced.",
+  "kind": "wrong-order"
+ },
+ {
+  "exercise": "fizzbuzz",
+  "source": "def fizzbuzz(n):\n    out = []\n    for i in range(1, n + 1):\n        if i % 3 == 0 and i % 5 == 0:\n            out.append(\"FizzBuzz\")\n        elif i % 3 == 0:\n            out.append(\"Fizz\")\n        elif i % 5 == 0:\n            out.append(\"Buzz\")\n        else:\n            out.append(i)\n    return out\n",
+  "cause": "Appends the number itself instead of str(i), so plain numbers are ints rather than text.",
+  "kind": "type"
+ },
+ {
+  "exercise": "fizzbuzz",
+  "source": "def fizzbuzz(n):\n    out = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            out.append(\"FizzBuzz)\n        elif i % 3 == 0:\n            out.append(\"Fizz\")\n        elif i % 5 == 0:\n            out.append(\"Buzz\")\n        else:\n            out.append(str(i))\n    return out\n",
+  "cause": "The string \"FizzBuzz is not closed, a SyntaxError.",
+  "kind": "syntax"
+ },
+ {
+  "exercise": "flatten",
+  "source": "def flatten(nested):\n    result = []\n    for item in nested:\n        if type(item) == list:\n            for x in item:\n                result.append(x)\n        else:\n            result.append(item)\n    return result\n",
+  "cause": "Only flattens one level: sublists are extended in but nested lists inside them are kept as lists.",
+  "kind": "not-recursive"
+ },
+ {
+  "exercise": "flatten",
+  "source": "def flatten(nested):\n    result = []\n    for item in nested:\n        if isinstance(item, list):\n            flatten(item)\n        else:\n            result.append(item)\n    return result\n",
+  "cause": "The recursive call result is thrown away (no extend/append), so nested items are lost.",
+  "kind": "return-value"
+ },
+ {
+  "exercise": "flatten",
+  "source": "def flatten(nested):\n    result = []\n    for item in nested:\n        if isinstance(item, list):\n            result.extend(flaten(item))\n        else:\n            result.append(item)\n    return result\n",
+  "cause": "Recursion calls flaten (typo) which does not exist, NameError on nested lists.",
+  "kind": "name"
+ },
+ {
+  "exercise": "gcd",
+  "source": "def gcd(a, b):\n    while b != 0:\n        a, b = b, a // b\n    return a\n",
+  "cause": "Update step uses b = a // b instead of the remainder, so results are wrong.",
+  "kind": "wrong-operator"
+ },
+ {
+  "exercise": "gcd",
+  "source": "def gcd(a, b):\n    small = min(a, b)\n    big = max(a, b)\n    if big % small == 0:\n        return small\n    return 1\n",
+  "cause": "Returns the smaller number when it divides evenly, else 1, instead of searching for the greatest common divisor.",
+  "kind": "misread-problem"
+ },
+ {
+  "exercise": "gcd",
+  "source": "def gcd(a, b):\n    while b != 0:\n        r = a % b\n        a = b\n        b = r\n        return a\n    return a\n",
+  "cause": "Returns inside the first loop iteration, so only one remainder step is ever taken.",
+  "kind": "return-placement"
+ },
+ {
+  "exercise": "is_palindrome",
+  "source": "def is_palindrome(text):\n    t = text.lower()\n    return t == t[::-1]\n",
+  "cause": "Spaces are not removed, so phrases with spaces such as \"Never odd or even\" fail.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "is_palindrome",
+  "source": "def is_palindrome(text):\n    t = text.replace(\" \", \"\").lower()\n    n = len(t)\n    for i in range(n // 2 - 1):\n        if t[i] != t[n - 1 - i]:\n            return False\n    return True\n",
+  "cause": "Compares only the first half using range(len/2 - 1), so mismatches in the middle letters are missed.",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "is_palindrome",
+  "source": "def isPalindrome(text):\n    t = text.replace(\" \", \"\").lower()\n    return t == t[::-1]\n",
+  "cause": "Function is named isPalindrome (camelCase) instead of is_palindrome.",
+  "kind": "wrong-function-name"
+ },
+ {
+  "exercise": "is_prime",
+  "source": "def is_prime(n):\n    for i in range(2, n):\n        if n % i == 0:\n            return False\n    return True\n",
+  "cause": "Numbers below 2 are not rejected, so 1 and 0 and negatives come out as prime.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "is_prime",
+  "source": "def is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, n):\n        if n % i == 0:\n            return False\n        else:\n            return True\n    return True\n",
+  "cause": "The True/False decision is made on the first candidate only: the else branch returns True after testing just i = 2.",
+  "kind": "return-placement"
+ },
+ {
+  "exercise": "is_prime",
+  "source": "def is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, int(n ** 0.5)):\n        if n % i == 0:\n            return False\n    return True\n",
+  "cause": "The loop range(2, int(n ** 0.5)) excludes the square root itself, so squares of primes like 49 look prime.",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "largest",
+  "source": "def largest(numbers):\n    if len(numbers) == 0:\n        return None\n    best = 0\n    for n in numbers:\n        if n > best:\n            best = n\n    return best\n",
+  "cause": "best starts at 0, so lists of only negative numbers return 0.",
+  "kind": "wrong-initial-value"
+ },
+ {
+  "exercise": "largest",
+  "source": "def largest(numbers):\n    if not numbers:\n        return None\n    big = numbers[0]\n    for n in numbers:\n        if n < big:\n            big = n\n    return big\n",
+  "cause": "The comparison is < instead of >, so the function returns the smallest number.",
+  "kind": "wrong-operator"
+ },
+ {
+  "exercise": "largest",
+  "source": "def largest(numbers):\n    if not numbers:\n        return None\n    big = numbers[0]\n    for n in numbers:\n        if n < big:\n            pass\n        else if n > big:\n            big = n\n    return big\n",
+  "cause": "Uses the keyword \"elseif\" style: \"else if n > big:\" is not valid Python, a SyntaxError.",
+  "kind": "syntax"
+ },
+ {
+  "exercise": "merge_sorted",
+  "source": "def merge_sorted(a, b):\n    result = []\n    i = 0\n    j = 0\n    while i < len(a) and j < len(b):\n        if a[i] < b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    return result\n",
+  "cause": "After the loop the remaining items of the longer list are never added, so they are lost.",
+  "kind": "missing-leftovers"
+ },
+ {
+  "exercise": "merge_sorted",
+  "source": "def merge_sorted(a, b):\n    result = a + b\n    return result\n",
+  "cause": "Just concatenates a + b and never merges them into sorted order.",
+  "kind": "misread-problem"
+ },
+ {
+  "exercise": "merge_sorted",
+  "source": "def merge_sorted(a, b):\n    result = []\n    while a and b:\n        if a[0] <= b[0]:\n            result.append(a.pop(0))\n        else:\n            result.append(b.pop(0))\n    result = result + a + b\n    return result[:len(result) - 1] if False else result\n",
+  "cause": "Pops from the front of the given lists to build the result, which empties the caller's lists and also fails on leftovers when one list runs out first.",
+  "kind": "mutation-of-input"
+ },
+ {
+  "exercise": "remove_duplicates",
+  "source": "def remove_duplicates(items):\n    return list(set(items))\n",
+  "cause": "Uses set(), which does not keep the original order.",
+  "kind": "wrong-built-in"
+ },
+ {
+  "exercise": "remove_duplicates",
+  "source": "def remove_duplicates(items):\n    for x in items:\n        if items.count(x) > 1:\n            items.remove(x)\n    return items\n",
+  "cause": "Removes items from the original list while looping over it, which changes the caller's list and skips elements.",
+  "kind": "mutation-of-input"
+ },
+ {
+  "exercise": "remove_duplicates",
+  "source": "def remove_duplicates(items):\n    result = []\n    for x in items:\n        if items.count(x) == 1:\n            result.append(x)\n    return result\n",
+  "cause": "Keeps only items that appear exactly once, instead of keeping the first copy of each.",
+  "kind": "misread-problem"
+ },
+ {
+  "exercise": "reverse_text",
+  "source": "def reverse_text(text):\n    result = \"\"\n    for i in range(len(text) - 1, 0, -1):\n        result += text[i]\n    return result\n",
+  "cause": "range(len(text) - 1, 0, -1) stops before index 0, so the first character is missing.",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "reverse_text",
+  "source": "def reverse_text(text):\n    result = \"\"\n    for ch in text:\n        result = result + ch\n    return result\n",
+  "cause": "Adds each character to the end (result + ch) so the text comes back unchanged.",
+  "kind": "wrong-order"
+ },
+ {
+  "exercise": "reverse_text",
+  "source": "def reverse_text(text):\n    result = \"\"\n    for ch in text:\n        result = ch + result\n    print(result)\n",
+  "cause": "The function builds the reversed text but never returns it (it prints it), so it returns None.",
+  "kind": "forgot-return"
+ },
+ {
+  "exercise": "rotate_list",
+  "source": "def rotate_list(items, k):\n    if len(items) == 0:\n        return []\n    k = k % len(items)\n    return items[k:] + items[:k]\n",
+  "cause": "Rotates to the left instead of the right: items[k:] + items[:k].",
+  "kind": "wrong-direction"
+ },
+ {
+  "exercise": "rotate_list",
+  "source": "def rotate_list(items, k):\n    if len(items) == 0:\n        return []\n    return items[-k:] + items[:-k]\n",
+  "cause": "k is not reduced with % len(items), so k larger than the list gives a wrong slice.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "rotate_list",
+  "source": "def rotate_list(items, k):\n    if not items:\n        return []\n    k = k % len(item)\n    return items[-k:] + items[:-k]\n",
+  "cause": "Uses len(item) where the parameter is items (NameError).",
+  "kind": "name"
+ },
+ {
+  "exercise": "run_length_encode",
+  "source": "def run_length_encode(text):\n    if text == \"\":\n        return \"\"\n    out = \"\"\n    count = 1\n    for i in range(1, len(text)):\n        if text[i] == text[i - 1]:\n            count += 1\n        else:\n            out += text[i - 1] + str(count)\n            count = 1\n    return out\n",
+  "cause": "The final run is never appended after the loop, so the last character group is missing.",
+  "kind": "missing-last-run"
+ },
+ {
+  "exercise": "run_length_encode",
+  "source": "def run_length_encode(text):\n    if text == \"\":\n        return \"\"\n    out = \"\"\n    count = 1\n    for i in range(1, len(text)):\n        if text[i] == text[i - 1]:\n            count += 1\n        else:\n            out += str(count) + text[i - 1]\n            count = 1\n    out += str(count) + text[-1]\n    return out\n",
+  "cause": "Writes the count before the character (\"3a\") instead of the character then count.",
+  "kind": "wrong-order"
+ },
+ {
+  "exercise": "run_length_encode",
+  "source": "def run_length_encode(text):\n    out = \"\"\n    seen = []\n    for ch in text:\n        if ch not in seen:\n            seen.append(ch)\n            out += ch + str(text.count(ch))\n    return out\n",
+  "cause": "Counts total occurrences of each character (via text.count) rather than neighbouring runs, so \"aabbaa\" becomes \"a4b2\".",
+  "kind": "misread-problem"
+ },
+ {
+  "exercise": "second_largest",
+  "source": "def second_largest(numbers):\n    if len(numbers) < 2:\n        return None\n    s = sorted(numbers, reverse=True)\n    return s[1]\n",
+  "cause": "Duplicates of the maximum are not skipped: it sorts and takes the second item, so [4, 9, 9, 2] gives 9.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "second_largest",
+  "source": "def second_largest(numbers):\n    first = 0\n    second = 0\n    for n in numbers:\n        if n > first:\n            second = first\n            first = n\n        elif n > second:\n            second = n\n    if second == 0:\n        return None\n    return second\n",
+  "cause": "Starts first and second at 0, so negative lists give wrong results (and None is never returned for equal values).",
+  "kind": "wrong-initial-value"
+ },
+ {
+  "exercise": "second_largest",
+  "source": "def second_largest(numbers):\n    if len(set(numbers)) < 2:\n        return None\n    numbers.remove(max(numbers))\n    return max(numbers)\n",
+  "cause": "Removes the maximum from the caller's list with remove(), which only removes one copy of a duplicate max and changes the input.",
+  "kind": "mutation-of-input"
+ },
+ {
+  "exercise": "total",
+  "source": "def total(numbers):\n    result = 0\n    for n in numbers:\n        result = n\n    return result\n",
+  "cause": "Uses = instead of += inside the loop, so the result is just the last number.",
+  "kind": "wrong-operator"
+ },
+ {
+  "exercise": "total",
+  "source": "def total(numbers):\n    result = 0\n    for i in range(1, len(numbers)):\n        result += numbers[i]\n    return result\n",
+  "cause": "range(1, len(numbers)) skips the first number.",
+  "kind": "off-by-one"
+ },
+ {
+  "exercise": "total",
+  "source": "def total(numbers):\n    result = 0\n    for n in numbers:\n        result += n\n        return result\n    return result\n",
+  "cause": "The return is inside the loop, so only the first number is added.",
+  "kind": "return-placement"
+ },
+ {
+  "exercise": "transpose",
+  "source": "def transpose(matrix):\n    result = []\n    for c in range(len(matrix)):\n        new_row = []\n        for r in range(len(matrix)):\n            new_row.append(matrix[r][c])\n        result.append(new_row)\n    return result\n",
+  "cause": "Uses len(matrix) for both dimensions, so non-square matrices fail with IndexError or the wrong shape.",
+  "kind": "wrong-bounds"
+ },
+ {
+  "exercise": "transpose",
+  "source": "def transpose(matrix):\n    if not matrix:\n        return []\n    result = []\n    for r in range(len(matrix)):\n        row = []\n        for c in range(len(matrix[0])):\n            row.append(matrix[r][c])\n        result.append(row)\n    return result\n",
+  "cause": "Swapped indices: builds matrix[c][r] so it just copies/misreads the matrix rather than swapping rows and columns.",
+  "kind": "wrong-variable"
+ },
+ {
+  "exercise": "transpose",
+  "source": "def transpose(matrix):\n    rows = len(matrix)\n    cols = len(matrix[0])\n    result = []\n    for c in range(cols):\n        new_row = []\n        for r in range(rows):\n            new_row.append(matrix[r][c])\n        result.append(new_row)\n    return result\n",
+  "cause": "Empty matrix is not handled: matrix[0] raises IndexError.",
+  "kind": "edge-case"
+ },
+ {
+  "exercise": "two_sum",
+  "source": "def two_sum(numbers, target):\n    for i in range(len(numbers)):\n        for j in range(i, len(numbers)):\n            if numbers[i] + numbers[j] == target:\n                return [i, j]\n    return None\n",
+  "cause": "Checks every pair including j == i, so an item can be paired with itself (e.g. 5 + 5 for [5], 10).",
+  "kind": "reuse-element"
+ },
+ {
+  "exercise": "two_sum",
+  "source": "def two_sum(numbers, target):\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if numbers[i] + numbers[j] == target:\n                return [numbers[i], numbers[j]]\n    return None\n",
+  "cause": "Returns the numbers themselves rather than their positions.",
+  "kind": "return-value"
+ },
+ {
+  "exercise": "two_sum",
+  "source": "def two_sum(numbers, target):\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if numbers[i] + numbers[j] == target:\n                return [i, j]\n        return None\n",
+  "cause": "The \"no pair\" return None is inside the outer loop, so only i = 0 is ever tried.",
+  "kind": "return-placement"
+ },
+ {
+  "exercise": "word_count",
+  "source": "def word_count(sentence):\n    words = sentence.split(\" \")\n    return len(words)\n",
+  "cause": "split(\" \") splits on each single space, so extra spaces create empty strings that are counted as words.",
+  "kind": "wrong-built-in"
+ },
+ {
+  "exercise": "word_count",
+  "source": "def word_count(sentence):\n    return sentence.count(\" \") + 1\n",
+  "cause": "Counts spaces and adds one, which is wrong with extra spaces and for an empty text.",
+  "kind": "misread-problem"
+ },
+ {
+  "exercise": "word_count",
+  "source": "def word_count(sentence)\n    return len(sentence.split())\n",
+  "cause": "Uses a stray \"return\" without colon: \"def word_count(sentence)\" has no colon, a SyntaxError.",
+  "kind": "syntax"
+ }
+]

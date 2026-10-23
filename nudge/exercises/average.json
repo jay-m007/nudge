@@ -1,0 +1,96 @@
+{
+ "id": "average",
+ "level": 1,
+ "title": "Average of a list",
+ "concepts": [
+  "loops",
+  "division",
+  "edge-cases"
+ ],
+ "function": "average",
+ "prompt": "Write average(numbers) that returns the mean of the numbers as a float, or 0.0 if the list is empty.",
+ "starter": "def average(numbers):\n    pass\n",
+ "solution": "def average(numbers):\n    if not numbers:\n        return 0.0\n    total = 0\n    for n in numbers:\n        total += n\n    return total / len(numbers)\n",
+ "cases": [
+  {
+   "args": [
+    [
+     2,
+     4,
+     6
+    ]
+   ],
+   "expected": 4.0,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     5
+    ]
+   ],
+   "expected": 5.0,
+   "tag": "single"
+  },
+  {
+   "args": [
+    []
+   ],
+   "expected": 0.0,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    [
+     1,
+     2
+    ]
+   ],
+   "expected": 1.5,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     -3,
+     3
+    ]
+   ],
+   "expected": 0.0,
+   "tag": "negative"
+  },
+  {
+   "args": [
+    [
+     10,
+     20,
+     30,
+     40
+    ]
+   ],
+   "expected": 25.0,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    [
+     0.5,
+     1.5
+    ]
+   ],
+   "expected": 1.0,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "The average is the total divided by how many numbers there are. What two things do you need?",
+  "You can get 'how many' with len(). What happens in Python if you divide by zero? When could that happen here?",
+  "Plan: if the list is empty return 0.0; otherwise add everything up and divide by len(numbers)."
+ ],
+ "edge_hints": {
+  "empty": "With no numbers there is nothing to divide by. The exercise tells you what to return; check for the empty list before dividing."
+ },
+ "approx": true
+}

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nudge-py"
+version = "0.1.0"
+description = "Practise Python. Get hints that nudge, not answers that spoil. Offline, no AI model."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+nudge = "nudge.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["nudge*"]
+
+[tool.setuptools.package-data]
+nudge = ["exercises/*.json"]

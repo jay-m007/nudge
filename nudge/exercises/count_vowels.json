@@ -1,0 +1,77 @@
+{
+ "id": "count_vowels",
+ "level": 1,
+ "title": "Count the vowels",
+ "concepts": [
+  "strings",
+  "loops",
+  "counting"
+ ],
+ "function": "count_vowels",
+ "prompt": "Write count_vowels(text) that returns how many vowels (a, e, i, o, u) the text contains.\nCapital letters count too.",
+ "starter": "def count_vowels(text):\n    pass\n",
+ "solution": "def count_vowels(text):\n    count = 0\n    for ch in text.lower():\n        if ch in 'aeiou':\n            count += 1\n    return count\n",
+ "cases": [
+  {
+   "args": [
+    "hello"
+   ],
+   "expected": 2,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "rhythm"
+   ],
+   "expected": 0,
+   "tag": "zero"
+  },
+  {
+   "args": [
+    ""
+   ],
+   "expected": 0,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "AEIOU"
+   ],
+   "expected": 5,
+   "tag": "uppercase"
+  },
+  {
+   "args": [
+    "Programming Is Fun"
+   ],
+   "expected": 5,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   ],
+   "expected": 50,
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    "Sky and Moon"
+   ],
+   "expected": 3,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "A string is a sequence of characters you can walk through one by one. What do you check about each one?",
+  "You need a counter that starts at 0 and goes up by 1 each time you meet a vowel. How can you ask 'is this letter one of aeiou'?",
+  "Plan: counter = 0; loop over the letters; if the letter is a vowel add 1; return the counter. Think about capital letters: 'A' is not 'a'."
+ ],
+ "edge_hints": {
+  "uppercase": "'A' and 'a' are different characters to Python. Make the comparison ignore the difference, for example by converting the text first.",
+  "zero": "If there are no vowels the answer is 0, not None. Make sure the counter starts at 0 and is returned either way.",
+  "empty": "An empty text has no vowels, so the answer is 0. Make sure your code still returns something."
+ }
+}

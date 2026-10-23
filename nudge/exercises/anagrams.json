@@ -1,0 +1,101 @@
+{
+ "id": "anagrams",
+ "level": 3,
+ "title": "Are they anagrams?",
+ "concepts": [
+  "strings",
+  "dictionaries",
+  "sorting"
+ ],
+ "function": "anagrams",
+ "prompt": "Write anagrams(a, b) that returns True if the two texts use exactly the same letters the same number of times, ignoring capital letters and spaces.\nExample: 'Listen' and 'Silent' -> True.",
+ "starter": "def anagrams(a, b):\n    pass\n",
+ "solution": "def anagrams(a, b):\n    def clean(s):\n        return sorted(s.replace(' ', '').lower())\n    return clean(a) == clean(b)\n",
+ "cases": [
+  {
+   "args": [
+    "listen",
+    "silent"
+   ],
+   "expected": true,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "hello",
+    "world"
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "Listen",
+    "Silent"
+   ],
+   "expected": true,
+   "tag": "uppercase"
+  },
+  {
+   "args": [
+    "a gentleman",
+    "elegant man"
+   ],
+   "expected": true,
+   "tag": "spaces"
+  },
+  {
+   "args": [
+    "",
+    ""
+   ],
+   "expected": true,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "abc",
+    "ab"
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "aab",
+    "abb"
+   ],
+   "expected": false,
+   "tag": "duplicates"
+  },
+  {
+   "args": [
+    "Dormitory",
+    "dirty room"
+   ],
+   "expected": true,
+   "tag": "uppercase",
+   "hidden": true
+  },
+  {
+   "args": [
+    "night",
+    "thing"
+   ],
+   "expected": true,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "What must be true of two words for them to be anagrams? Think about the letters and how many of each.",
+  "Two texts have the same letters exactly when, after sorting their letters, the results are equal. Which small clean-up must happen before you sort?",
+  "Plan: for each text remove spaces, make it lower case, sort its letters; return whether the two sorted results are equal. Mind 'aab' vs 'abb': a set of letters isn't enough, counts matter."
+ ],
+ "edge_hints": {
+  "uppercase": "'L' and 'l' differ for Python; convert the case first.",
+  "spaces": "Spaces are not letters; remove them before comparing.",
+  "duplicates": "Comparing sets of letters ignores how many times each appears. Compare sorted letters or counts instead.",
+  "empty": "Two empty texts have the same (no) letters: True."
+ }
+}

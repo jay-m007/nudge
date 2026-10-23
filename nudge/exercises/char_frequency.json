@@ -1,0 +1,99 @@
+{
+ "id": "char_frequency",
+ "level": 2,
+ "title": "Count each character",
+ "concepts": [
+  "dictionaries",
+  "strings",
+  "counting"
+ ],
+ "function": "char_frequency",
+ "prompt": "Write char_frequency(text) that returns a dictionary mapping each character to how many times it appears.\nExample: 'aab' -> {'a': 2, 'b': 1}.",
+ "starter": "def char_frequency(text):\n    pass\n",
+ "solution": "def char_frequency(text):\n    counts = {}\n    for ch in text:\n        counts[ch] = counts.get(ch, 0) + 1\n    return counts\n",
+ "cases": [
+  {
+   "args": [
+    "aab"
+   ],
+   "expected": {
+    "a": 2,
+    "b": 1
+   },
+   "tag": "basic"
+  },
+  {
+   "args": [
+    ""
+   ],
+   "expected": {},
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "hello"
+   ],
+   "expected": {
+    "h": 1,
+    "e": 1,
+    "l": 2,
+    "o": 1
+   },
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "a b a"
+   ],
+   "expected": {
+    "a": 2,
+    " ": 2,
+    "b": 1
+   },
+   "tag": "spaces"
+  },
+  {
+   "args": [
+    "AaA"
+   ],
+   "expected": {
+    "A": 2,
+    "a": 1
+   },
+   "tag": "uppercase"
+  },
+  {
+   "args": [
+    "mississippi"
+   ],
+   "expected": {
+    "m": 1,
+    "i": 4,
+    "s": 4,
+    "p": 2
+   },
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    "zzzzzz"
+   ],
+   "expected": {
+    "z": 6
+   },
+   "tag": "all-same",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Think of a tally chart: one row per character, and a mark every time you see it again.",
+  "A dictionary is a tally chart. The first time you see a character it has no entry yet; how do you handle that?",
+  "Plan: counts = {}; for each character: if it's already a key add 1, otherwise set it to 1 (or use counts.get(ch, 0) + 1); return counts."
+ ],
+ "edge_hints": {
+  "empty": "An empty text gives an empty dictionary {}.",
+  "uppercase": "'A' and 'a' are different keys unless the exercise says otherwise. Don't change the case here.",
+  "spaces": "A space is a character too and gets its own count."
+ }
+}

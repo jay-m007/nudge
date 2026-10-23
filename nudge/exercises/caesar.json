@@ -1,0 +1,102 @@
+{
+ "id": "caesar",
+ "level": 3,
+ "title": "Caesar cipher",
+ "concepts": [
+  "strings",
+  "loops",
+  "modulo"
+ ],
+ "function": "caesar",
+ "prompt": "Write caesar(text, shift) that moves every letter shift places along the alphabet (wrapping around from z to a), keeps capital letters capital, and leaves everything else unchanged. shift may be negative.\nExample: ('abc', 1) -> 'bcd'; ('xyz', 3) -> 'abc'.",
+ "starter": "def caesar(text, shift):\n    pass\n",
+ "solution": "def caesar(text, shift):\n    result = []\n    for ch in text:\n        if 'a' <= ch <= 'z':\n            result.append(chr((ord(ch) - ord('a') + shift) % 26 + ord('a')))\n        elif 'A' <= ch <= 'Z':\n            result.append(chr((ord(ch) - ord('A') + shift) % 26 + ord('A')))\n        else:\n            result.append(ch)\n    return ''.join(result)\n",
+ "cases": [
+  {
+   "args": [
+    "abc",
+    1
+   ],
+   "expected": "bcd",
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "xyz",
+    3
+   ],
+   "expected": "abc",
+   "tag": "edge"
+  },
+  {
+   "args": [
+    "Hello, World!",
+    5
+   ],
+   "expected": "Mjqqt, Btwqi!",
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "",
+    4
+   ],
+   "expected": "",
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "abc",
+    0
+   ],
+   "expected": "abc",
+   "tag": "zero"
+  },
+  {
+   "args": [
+    "bcd",
+    -1
+   ],
+   "expected": "abc",
+   "tag": "negative"
+  },
+  {
+   "args": [
+    "abc",
+    27
+   ],
+   "expected": "bcd",
+   "tag": "large"
+  },
+  {
+   "args": [
+    "Zebra",
+    1
+   ],
+   "expected": "Afcsb",
+   "tag": "uppercase",
+   "hidden": true
+  },
+  {
+   "args": [
+    "a-b c",
+    2
+   ],
+   "expected": "c-d e",
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Write the alphabet with numbers 0 to 25 underneath. What happens to a letter when you add the shift to its number? What if it goes past 25?",
+  "ord(letter) gives a number, chr(number) gives the letter back. The % 26 operator wraps numbers around. Remember that 'a' is not at 0: subtract where the alphabet starts, then add it back.",
+  "Plan: for each character: if it's a lower-case letter, convert position = ord(ch) - ord('a'), add shift, % 26, convert back with chr; same with 'A' for capitals; anything else stays. Join the pieces."
+ ],
+ "edge_hints": {
+  "edge": "Letters near the end (x, y, z) must wrap round to the start of the alphabet. The % 26 operator does that.",
+  "negative": "A negative shift goes backwards; % 26 in Python handles it correctly, but only if you apply it after adding the shift.",
+  "uppercase": "Capital letters start at 'A', not 'a'; and must stay capitals.",
+  "large": "A shift of 27 is the same as 1: use % 26.",
+  "empty": "An empty text stays empty."
+ }
+}

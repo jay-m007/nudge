@@ -1,0 +1,98 @@
+{
+ "id": "balanced_brackets",
+ "level": 3,
+ "title": "Balanced brackets",
+ "concepts": [
+  "strings",
+  "stack",
+  "loops"
+ ],
+ "function": "balanced_brackets",
+ "prompt": "Write balanced_brackets(text) that returns True if every (, [ and { in the text is closed by the right kind in the right order, ignoring all other characters; otherwise False.\nExamples: '([]{})' -> True, '(]' -> False, '(()' -> False.",
+ "starter": "def balanced_brackets(text):\n    pass\n",
+ "solution": "def balanced_brackets(text):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for ch in text:\n        if ch in '([{':\n            stack.append(ch)\n        elif ch in pairs:\n            if not stack or stack.pop() != pairs[ch]:\n                return False\n    return not stack\n",
+ "cases": [
+  {
+   "args": [
+    "([]{})"
+   ],
+   "expected": true,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "(]"
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "(()"
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    ""
+   ],
+   "expected": true,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "())"
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "a(b[c]d)e"
+   ],
+   "expected": true,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    ")("
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "{[()]}"
+   ],
+   "expected": true,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    "(((((((((())))))))))"
+   ],
+   "expected": true,
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    "([)]"
+   ],
+   "expected": false,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Think of nesting boxes: the last box you opened must be the first one you close.",
+  "A list used as a stack (append to add, pop to remove the last) remembers the open brackets in order. What do you do with a closing bracket?",
+  "Plan: for each character: opening bracket -> push; closing bracket -> the stack must not be empty and its top must be the matching opener, else return False; ignore other characters. At the end the stack must be empty."
+ ],
+ "edge_hints": {
+  "empty": "No brackets at all is balanced (True).",
+  "basic": "Check both kinds of failure: a closer with nothing open, and openers left over at the end."
+ }
+}

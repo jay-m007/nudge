@@ -1,0 +1,84 @@
+{
+ "id": "fibonacci",
+ "level": 2,
+ "title": "Fibonacci number",
+ "concepts": [
+  "loops",
+  "recursion",
+  "sequences"
+ ],
+ "function": "fibonacci",
+ "prompt": "Write fibonacci(n) that returns the n-th Fibonacci number, where fibonacci(0) = 0, fibonacci(1) = 1, and every later number is the sum of the two before it: 0, 1, 1, 2, 3, 5, 8, ...",
+ "starter": "def fibonacci(n):\n    pass\n",
+ "solution": "def fibonacci(n):\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n",
+ "cases": [
+  {
+   "args": [
+    6
+   ],
+   "expected": 8,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    0
+   ],
+   "expected": 0,
+   "tag": "zero"
+  },
+  {
+   "args": [
+    1
+   ],
+   "expected": 1,
+   "tag": "single"
+  },
+  {
+   "args": [
+    2
+   ],
+   "expected": 1,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    10
+   ],
+   "expected": 55,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    30
+   ],
+   "expected": 832040,
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    25
+   ],
+   "expected": 75025,
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    37
+   ],
+   "expected": 24157817,
+   "tag": "large",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Write out the first 10 numbers by hand and look at how each is made from the earlier ones.",
+  "To make the next number you only need to remember the last two. How can you update both as you go round a loop?",
+  "Plan: keep two variables (the two latest numbers, starting 0 and 1); repeat n times: replace them with (second, first + second); the first one is the answer. If you use recursion, remember it gets very slow for n around 30."
+ ],
+ "edge_hints": {
+  "zero": "fibonacci(0) is 0, the very first number. Check your starting values.",
+  "single": "fibonacci(1) is 1."
+ }
+}

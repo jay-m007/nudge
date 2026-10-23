@@ -1,0 +1,76 @@
+{
+ "id": "reverse_text",
+ "level": 1,
+ "title": "Reverse a text",
+ "concepts": [
+  "strings",
+  "indexing",
+  "loops"
+ ],
+ "function": "reverse_text",
+ "prompt": "Write reverse_text(text) that returns the text backwards.\nTry to do it with a loop first (slicing tricks like text[::-1] are allowed, but you learn more with the loop).",
+ "starter": "def reverse_text(text):\n    pass\n",
+ "solution": "def reverse_text(text):\n    result = ''\n    for ch in text:\n        result = ch + result\n    return result\n",
+ "cases": [
+  {
+   "args": [
+    "hello"
+   ],
+   "expected": "olleh",
+   "tag": "basic"
+  },
+  {
+   "args": [
+    ""
+   ],
+   "expected": "",
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "a"
+   ],
+   "expected": "a",
+   "tag": "single"
+  },
+  {
+   "args": [
+    "Hello World"
+   ],
+   "expected": "dlroW olleH",
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "madam"
+   ],
+   "expected": "madam",
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "abababababababababababababababababababab"
+   ],
+   "expected": "babababababababababababababababababababa",
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    "  hi "
+   ],
+   "expected": " ih  ",
+   "tag": "spaces",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Read the word 'stop' backwards by hand: which letter do you write first, and which last?",
+  "Strings can't be changed in place, so build a new one. Each letter you meet should go... where in the new string?",
+  "Plan: start with an empty result; for each letter of the original, put it in front of the result; return the result."
+ ],
+ "edge_hints": {
+  "empty": "The reverse of an empty text is an empty text. Make sure the function still returns '' and doesn't return None.",
+  "spaces": "Spaces are characters like any other; they must stay and move too."
+ }
+}

@@ -1,0 +1,76 @@
+{
+ "id": "digit_sum",
+ "level": 2,
+ "title": "Sum of the digits",
+ "concepts": [
+  "loops",
+  "numbers",
+  "edge-cases"
+ ],
+ "function": "digit_sum",
+ "prompt": "Write digit_sum(n) that returns the sum of the digits of the whole number n. For negative numbers ignore the minus sign.\nExample: 4821 -> 15.",
+ "starter": "def digit_sum(n):\n    pass\n",
+ "solution": "def digit_sum(n):\n    n = abs(n)\n    total = 0\n    while n > 0:\n        total += n % 10\n        n //= 10\n    return total\n",
+ "cases": [
+  {
+   "args": [
+    4821
+   ],
+   "expected": 15,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    0
+   ],
+   "expected": 0,
+   "tag": "zero"
+  },
+  {
+   "args": [
+    7
+   ],
+   "expected": 7,
+   "tag": "single"
+  },
+  {
+   "args": [
+    -123
+   ],
+   "expected": 6,
+   "tag": "negative"
+  },
+  {
+   "args": [
+    1000
+   ],
+   "expected": 1,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    99999
+   ],
+   "expected": 45,
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    505
+   ],
+   "expected": 10,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "How can you get the last digit of 4821? And how do you then 'remove' that digit to get 482?",
+  "The remainder after dividing by 10 is the last digit; dividing by 10 with // (whole-number division) drops it. When do you stop?",
+  "Plan: total = 0; while n is bigger than 0: add n % 10 to the total, then replace n with n // 10; return total. Take care of the minus sign first (abs)."
+ ],
+ "edge_hints": {
+  "zero": "0 has digit sum 0. A loop that runs 'while n > 0' never runs for 0, so make sure the starting total is returned.",
+  "negative": "The minus sign is not a digit. Use abs(n) before you start."
+ }
+}

@@ -1,0 +1,76 @@
+{
+ "id": "word_count",
+ "level": 2,
+ "title": "Count the words",
+ "concepts": [
+  "strings",
+  "split",
+  "edge-cases"
+ ],
+ "function": "word_count",
+ "prompt": "Write word_count(sentence) that returns how many words the sentence has. Words are separated by one or more spaces; there may be extra spaces at the start and end.",
+ "starter": "def word_count(sentence):\n    pass\n",
+ "solution": "def word_count(sentence):\n    return len(sentence.split())\n",
+ "cases": [
+  {
+   "args": [
+    "hello world"
+   ],
+   "expected": 2,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    ""
+   ],
+   "expected": 0,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "one"
+   ],
+   "expected": 1,
+   "tag": "single"
+  },
+  {
+   "args": [
+    "  lots   of   spaces  "
+   ],
+   "expected": 3,
+   "tag": "spaces"
+  },
+  {
+   "args": [
+    "a b c d e"
+   ],
+   "expected": 5,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "   "
+   ],
+   "expected": 0,
+   "tag": "spaces",
+   "hidden": true
+  },
+  {
+   "args": [
+    "tab\tseparated words"
+   ],
+   "expected": 3,
+   "tag": "spaces",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "How would you count words in a sentence on paper? Where does each new word begin?",
+  "Counting the spaces gives the wrong answer when there are extra spaces. Python has a string method that splits text into words and ignores extra whitespace.",
+  "Plan: split the sentence into a list of words with .split() (with no argument), then count the list with len()."
+ ],
+ "edge_hints": {
+  "spaces": "Extra spaces at the start, end or between words must not create extra words. Look at what .split() does with no argument.",
+  "empty": "An empty sentence has 0 words."
+ }
+}

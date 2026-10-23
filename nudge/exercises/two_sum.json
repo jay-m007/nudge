@@ -1,0 +1,156 @@
+{
+ "id": "two_sum",
+ "level": 3,
+ "title": "Two numbers that add up",
+ "concepts": [
+  "loops",
+  "dictionaries",
+  "indexing"
+ ],
+ "function": "two_sum",
+ "prompt": "Write two_sum(numbers, target) that returns a list [i, j] of two different positions (i < j) whose numbers add up to target, or None if there is no such pair.\nIn the tests there is never more than one right answer.",
+ "starter": "def two_sum(numbers, target):\n    pass\n",
+ "solution": "def two_sum(numbers, target):\n    seen = {}\n    for j, n in enumerate(numbers):\n        if target - n in seen:\n            return [seen[target - n], j]\n        seen[n] = j\n    return None\n",
+ "cases": [
+  {
+   "args": [
+    [
+     2,
+     7,
+     11,
+     15
+    ],
+    9
+   ],
+   "expected": [
+    0,
+    1
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     3,
+     2,
+     4
+    ],
+    6
+   ],
+   "expected": [
+    1,
+    2
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     1,
+     2,
+     3
+    ],
+    100
+   ],
+   "expected": null,
+   "tag": "none"
+  },
+  {
+   "args": [
+    [],
+    5
+   ],
+   "expected": null,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    [
+     3,
+     3
+    ],
+    6
+   ],
+   "expected": [
+    0,
+    1
+   ],
+   "tag": "duplicates"
+  },
+  {
+   "args": [
+    [
+     -1,
+     -2,
+     -3,
+     -4,
+     -5
+    ],
+    -8
+   ],
+   "expected": [
+    2,
+    4
+   ],
+   "tag": "negative"
+  },
+  {
+   "args": [
+    [
+     5
+    ],
+    10
+   ],
+   "expected": null,
+   "tag": "single"
+  },
+  {
+   "args": [
+    [
+     0,
+     4,
+     3,
+     0
+    ],
+    0
+   ],
+   "expected": [
+    0,
+    3
+   ],
+   "tag": "zero"
+  },
+  {
+   "args": [
+    [
+     10,
+     20,
+     30,
+     40,
+     50,
+     60,
+     70
+    ],
+    130
+   ],
+   "expected": [
+    5,
+    6
+   ],
+   "tag": "large",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Pick one number. What other number would you need to reach the target? How could you find out whether it exists in the list?",
+  "Looping over every pair works, but a dictionary that remembers the numbers you've already passed lets you look up 'the missing partner' directly.",
+  "Plan: go through the list with positions; for each number compute its partner (target minus number); if the partner was seen before return both positions; otherwise remember this number and its position. Return None at the end."
+ ],
+ "edge_hints": {
+  "duplicates": "The same VALUE can appear twice, at different positions. Make sure you don't use the same position twice, but do allow equal values.",
+  "none": "If no pair exists you must return None after checking everything.",
+  "zero": "Zero is a normal number; don't treat 0 as 'missing' (watch out for `if position:` checks).",
+  "empty": "An empty list has no pair; return None.",
+  "single": "One number can't pair with itself."
+ }
+}

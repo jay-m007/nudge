@@ -1,0 +1,91 @@
+{
+ "id": "gcd",
+ "level": 3,
+ "title": "Greatest common divisor",
+ "concepts": [
+  "loops",
+  "numbers",
+  "algorithms"
+ ],
+ "function": "gcd",
+ "prompt": "Write gcd(a, b) that returns the greatest common divisor of two positive whole numbers: the biggest number that divides both exactly.\nExample: gcd(12, 18) = 6.",
+ "starter": "def gcd(a, b):\n    pass\n",
+ "solution": "def gcd(a, b):\n    while b != 0:\n        a, b = b, a % b\n    return a\n",
+ "cases": [
+  {
+   "args": [
+    12,
+    18
+   ],
+   "expected": 6,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    7,
+    13
+   ],
+   "expected": 1,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    10,
+    10
+   ],
+   "expected": 10,
+   "tag": "same"
+  },
+  {
+   "args": [
+    1,
+    99
+   ],
+   "expected": 1,
+   "tag": "one"
+  },
+  {
+   "args": [
+    48,
+    18
+   ],
+   "expected": 6,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    100,
+    25
+   ],
+   "expected": 25,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    17,
+    5
+   ],
+   "expected": 1,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    123456,
+    7890
+   ],
+   "expected": 6,
+   "tag": "large",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "List the divisors of 12 and of 18 by hand. Which are shared, and which is largest?",
+  "There's an old trick by Euclid: the gcd of a and b is the same as the gcd of b and the remainder of a divided by b. When can you stop?",
+  "Plan: while b is not 0, replace (a, b) with (b, a % b); when b reaches 0, a is the answer."
+ ],
+ "edge_hints": {
+  "same": "gcd(n, n) is n. Check your loop still ends with the right variable.",
+  "one": "1 divides everything, so the answer must be 1."
+ }
+}

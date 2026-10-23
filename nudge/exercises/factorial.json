@@ -1,0 +1,76 @@
+{
+ "id": "factorial",
+ "level": 2,
+ "title": "Factorial",
+ "concepts": [
+  "loops",
+  "recursion",
+  "edge-cases"
+ ],
+ "function": "factorial",
+ "prompt": "Write factorial(n) that returns n! = 1 x 2 x 3 x ... x n for n >= 0. By definition 0! is 1.",
+ "starter": "def factorial(n):\n    pass\n",
+ "solution": "def factorial(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result\n",
+ "cases": [
+  {
+   "args": [
+    5
+   ],
+   "expected": 120,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    1
+   ],
+   "expected": 1,
+   "tag": "single"
+  },
+  {
+   "args": [
+    0
+   ],
+   "expected": 1,
+   "tag": "zero"
+  },
+  {
+   "args": [
+    3
+   ],
+   "expected": 6,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    10
+   ],
+   "expected": 3628800,
+   "tag": "large"
+  },
+  {
+   "args": [
+    20
+   ],
+   "expected": 2432902008176640000,
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    2
+   ],
+   "expected": 2,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Work out 4! by hand: 4 x 3 x 2 x 1. What do you multiply, in what order, and what do you start from?",
+  "A product that starts at 0 stays 0 forever. What should the starting value be so that multiplying works?",
+  "Plan (loop): result = 1; for each number from 2 up to n multiply result by it; return result. Plan (recursion): n! = n x (n-1)!, and 0! = 1 stops the recursion."
+ ],
+ "edge_hints": {
+  "zero": "0! is defined as 1. Make sure your code returns 1 for n = 0, not 0 and not an error.",
+  "single": "1! is 1."
+ }
+}
