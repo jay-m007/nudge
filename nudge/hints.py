@@ -53,7 +53,7 @@ def hint_at(level: int, finding: Finding | None, exercise: dict) -> Hint:
     if finding.example and finding.example in EXAMPLES:
         title, code = EXAMPLES[finding.example]
         return Hint(level, n, "A similar example", f"{title}.\n\n{code}")
-    return Hint(level, n, "The exercise's approach", exercise["hints"][0])
+    return Hint(level, n, "A debugging habit", "Make the problem smaller. Shrink the failing input until the bug is obvious, or add print() lines that show the key variables after each step, then compare them with what you worked out by hand.")
 
 
 def next_hint(shown_level: int, finding: Finding | None, exercise: dict) -> Hint:

@@ -8,11 +8,59 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from datetime import date, timedelta
 from pathlib import Path
 
 INTERVALS = [1, 2, 4, 8, 16]  # days to wait in box 1..5
 CLEAN_LEVEL = 2  # hints up to this level (where to look / what to think about) still count as "on your own"
+
+
+def _default_entry() -> dict:
+    return {"attempts": 0, "fails": 0, "solved": False, "clean": False, "max_level": 0, "hint_level": 0, "hint_code": "", "solution_seen": False, "box": 0, "due": None, "solved_on": None, "reviews": 0, "last_hash": "", "hint_ready": True}
+
+
+def _int(v, default=0) -> int:
+    try:
+        return max(0, int(v))
+    except (TypeError, ValueError):
+        return default
+
+
+def sanitise(raw) -> dict:
+    """Whatever is in the file, return something safe to use (a damaged or hand-edited file must not crash practice)."""
+    out: dict = {"exercises": {}, "concept_trouble": {}}
+    if not isinstance(raw, dict):
+        return out
+    ex = raw.get("exercises")
+    if isinstance(ex, dict):
+        for eid, e in ex.items():
+            if not isinstance(e, dict):
+                continue
+            d = _default_entry()
+            for k in ("attempts", "fails", "max_level", "hint_level", "reviews"):
+                d[k] = _int(e.get(k))
+            d["box"] = min(5, _int(e.get("box")))
+            for k in ("solved", "clean", "solution_seen", "hint_ready"):
+                d[k] = bool(e.get(k, d[k]))
+            for k in ("hint_code", "last_hash"):
+                d[k] = e.get(k) if isinstance(e.get(k), str) else ""
+            for k in ("due", "solved_on"):
+                v = e.get(k)
+                try:
+                    date.fromisoformat(v)
+                    d[k] = v
+                except (TypeError, ValueError):
+                    d[k] = None
+            if d["solved"] and not d["due"]:
+                d["due"] = date.today().isoformat()
+            if d["solved"] and d["box"] < 1:
+                d["box"] = 1
+            out["exercises"][str(eid)] = d
+    ct = raw.get("concept_trouble")
+    if isinstance(ct, dict):
+        out["concept_trouble"] = {str(k): _int(v) for k, v in ct.items() if _int(v) > 0}
+    return out
 
 
 def home() -> Path:
@@ -21,21 +69,23 @@ def home() -> Path:
 
 class Progress:
     def __init__(self, path: Path | None = None, today: date | None = None, data: dict | None = None):
-        """With ``data`` the progress lives in memory only (the browser version keeps it in localStorage)."""
+        """With ``data`` the progress lives in memory only and is never written (used by tests)."""
         self.memory = data is not None
+        self._warned = False
         self.path = path or home() / "progress.json"
         self.today = today or date.today()
         self.data: dict = {"exercises": {}, "concept_trouble": {}}
         if self.memory:
-            if isinstance(data.get("exercises"), dict):
-                self.data.update(data)
+            self.data = sanitise(data)
         elif self.path.exists():
             try:
-                loaded = json.loads(self.path.read_text(encoding="utf-8"))
-                if isinstance(loaded, dict) and isinstance(loaded.get("exercises"), dict):
-                    self.data.update(loaded)
+                loaded = json.loads(self.path.read_text(encoding="utf-8-sig"))
             except (OSError, ValueError):
-                # A damaged file shouldn't block practice; keep a copy and start fresh.
+                loaded = None
+            if isinstance(loaded, dict) and isinstance(loaded.get("exercises", {}), dict):
+                self.data = sanitise(loaded)
+            else:
+                # Not something we wrote. Keep a copy and start fresh instead of silently overwriting it.
                 try:
                     self.path.replace(self.path.with_suffix(".broken"))
                 except OSError:
@@ -45,20 +95,28 @@ class Progress:
     def save(self) -> None:
         if self.memory:
             return
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(self.data, indent=1), encoding="utf-8")
-        tmp.replace(self.path)
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self.path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(self.data, indent=1), encoding="utf-8")
+            tmp.replace(self.path)
+        except OSError as e:
+            if not self._warned:
+                print(f"nudge: could not save your progress to {self.path} ({e.strerror or e})", file=sys.stderr)
+                self._warned = True
 
     def ex(self, exercise_id: str) -> dict:
-        return self.data["exercises"].setdefault(
-            exercise_id,
-            {"attempts": 0, "fails": 0, "solved": False, "clean": False, "max_level": 0, "hint_level": 0, "hint_code": "", "solution_seen": False, "box": 0, "due": None, "solved_on": None, "reviews": 0},
-        )
+        return self.data["exercises"].setdefault(exercise_id, _default_entry())
 
     # -- events
-    def record_fail(self, exercise_id: str, top_code: str | None, concepts: list[str]) -> None:
+    def record_fail(self, exercise_id: str, top_code: str | None, concepts: list[str], source_hash: str = "") -> None:
+        """A failed check. Running the same unchanged file again is not a new attempt (it can't unlock the solution)."""
         e = self.ex(exercise_id)
+        e["hint_ready"] = True
+        if source_hash and source_hash == e["last_hash"]:
+            self.save()
+            return
+        e["last_hash"] = source_hash
         e["attempts"] += 1
         e["fails"] += 1
         if top_code and top_code != e["hint_code"]:
@@ -74,8 +132,14 @@ class Progress:
             e["hint_code"], e["hint_level"] = top_code, 0
             self.save()
 
+    def hint_allowed(self, exercise_id: str) -> bool:
+        """The next rung needs a check in between (and so a chance to change the code)."""
+        e = self.ex(exercise_id)
+        return e["hint_level"] == 0 or e["hint_ready"]
+
     def record_hint(self, exercise_id: str, level: int) -> None:
         e = self.ex(exercise_id)
+        e["hint_ready"] = False
         e["hint_level"] = max(e["hint_level"], level)
         e["max_level"] = max(e["max_level"], level)
         self.save()
@@ -87,6 +151,9 @@ class Progress:
     def record_pass(self, exercise_id: str) -> dict:
         """Returns what happened: {"first": bool, "clean": bool, "box": int, "due": str}."""
         e = self.ex(exercise_id)
+        if e["solved"] and e["due"] and e["due"] > self.today.isoformat():
+            # Passing again before it is due is fine, but it is not a review: don't move the box.
+            return {"first": False, "clean": True, "box": e["box"], "due": e["due"], "not_due": True}
         e["attempts"] += 1
         clean = e["max_level"] <= CLEAN_LEVEL and not e["solution_seen"]
         first = not e["solved"]
@@ -98,9 +165,9 @@ class Progress:
             e["reviews"] += 1
             e["box"] = min(5, e["box"] + 1) if clean else 1
         e["due"] = (self.today + timedelta(days=INTERVALS[e["box"] - 1])).isoformat()
-        e["hint_level"], e["hint_code"], e["max_level"], e["solution_seen"] = 0, "", 0, False
+        e["hint_level"], e["hint_code"], e["max_level"], e["solution_seen"], e["last_hash"], e["hint_ready"] = 0, "", 0, False, "", True
         self.save()
-        return {"first": first, "clean": clean, "box": e["box"], "due": e["due"]}
+        return {"first": first, "clean": clean, "box": e["box"], "due": e["due"], "not_due": False}
 
     def reset(self, exercise_id: str) -> None:
         self.data["exercises"].pop(exercise_id, None)

@@ -20,9 +20,13 @@ BUGS = [
     ("total", "wrong number of parameters", "def total():\n    return 0\n", {"type_error"}),
     ("total", "calls input()", "def total(numbers):\n    n = input('number? ')\n    return n\n", {"input_call"}),
     ("total", "shadows a built-in and calls it", "def total(numbers):\n    sum = 0\n    for n in numbers:\n        sum += n\n    return sum(numbers)\n", {"type_error", "shadow_builtin"}),
+    ("total", "global counter leaks between calls", "c = 0\ndef total(numbers):\n    global c\n    for n in numbers:\n        c += n\n    return c\n", {"global_state"}),
+    ("total", "harmless unused mutable default", "def total(numbers, seen=[]):\n    result = 0\n    for n in numbers[1:]:\n        result += n\n    return result\n", {"off_by_one", "wrong_answer", "incomplete_output", "unused_param", "edge_single", "fails_on_a_single_item", "edge_negative", "fails_on_negative_numbers", "fails_on_empty_input", "edge_empty", "hidden_only"}),
+    ("total", "variable named like a built-in that is never called", "def total(numbers):\n    sum = 0\n    for n in numbers:\n        sum += n\n    return sum + 1\n", {"off_by_one"}),
     # --- largest
     ("largest", "starts at 0 (fails for negatives)", "def largest(numbers):\n    if not numbers:\n        return None\n    best = 0\n    for n in numbers:\n        if n > best:\n            best = n\n    return best\n", {"edge_negative"}),
     ("largest", "no empty check", "def largest(numbers):\n    best = numbers[0]\n    for n in numbers:\n        if n > best:\n            best = n\n    return best\n", {"index_error"}),
+    ("largest", "prints the list instead of returning the answer", "def largest(numbers):\n    print(numbers)\n", {"missing_return", "return_vs_print"}),
     ("largest", "assignment instead of comparison", "def largest(numbers):\n    best = numbers[0]\n    for n in numbers:\n        if n = best:\n            best = n\n    return best\n", {"assign_vs_compare"}),
     ("largest", "returns the last item", "def largest(numbers):\n    if not numbers:\n        return None\n    for n in numbers:\n        best = n\n    return best\n", {"wrong_answer", "constant_answer"}),
     # --- count_vowels

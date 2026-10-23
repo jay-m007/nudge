@@ -74,9 +74,7 @@ def main():
 def run_job(job, out, use_alarm=False):
     """Run one job, writing one JSON line per event to ``out``.
 
-    Called as a script by runner.py (a separate process, with a per-case alarm where the
-    OS has one), and in-process by the browser version, where the page stops a hung
-    worker instead.
+    Called as a script by runner.py: a separate process, with a per-case alarm where the OS has one.
     """
     prev_stdout = sys.stdout
     alarm = None
@@ -102,6 +100,10 @@ def run_job(job, out, use_alarm=False):
     except SyntaxError as e:
         sys.stdout = prev_stdout
         emit(out, {"kind": "syntax", "msg": e.msg, "line": e.lineno, "offset": e.offset, "text": (e.text or "").rstrip("\n")})
+        return
+    except (ValueError, RecursionError, MemoryError) as e:  # null bytes, absurdly deep expressions
+        sys.stdout = prev_stdout
+        emit(out, {"kind": "syntax", "msg": "Python could not read the file (" + (str(e)[:80] or type(e).__name__) + ")", "line": None, "offset": None, "text": ""})
         return
     try:
         if alarm:
@@ -159,6 +161,9 @@ def run_job(job, out, use_alarm=False):
         sys.stdout = prev_stdout
         res["printed"] = printed[:500]
         emit(out, res)
+        if res.get("error", {}).get("type") == "Timeout":
+            emit(out, {"kind": "stopped"})  # the rest would only repeat the wait
+            break
 
 
 def _current_line():

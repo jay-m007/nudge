@@ -62,9 +62,9 @@ It also finds what the *failing inputs have in common* (for example: every faili
 
 **2. A ladder, one rung per request** (`nudge/hints.py`): where to look, what to think about, the exact spot, a small worked example on a *different* problem, then the exercise author's own approach hints. When no rule matches, it teaches debugging by contrast: the smallest failing input, the closest passing one, and where the output first differs.
 
-**3. The solution is locked** until you have failed at least 3 checks *and* reached the worked example. Looking at it marks the exercise as "needed help".
+**3. The solution is locked** until you have failed at least 3 *different* versions of your file with `check` *and* reached the worked example. Re-running an unchanged file doesn't count, and the next hint needs a `check` in between, so the lock can't be opened by repeating commands. Looking at the solution marks the exercise as "needed help". (`--force` skips the lock, for teachers.)
 
-**4. Spaced review** (`nudge/progress.py`): solving without a big hint moves an exercise to a longer review interval (1, 2, 4, 8, 16 days, the Leitner method); needing help sends it back. `nudge next` brings due reviews first, then exercises on topics you struggled with.
+**4. Spaced review** (`nudge/progress.py`): solving without a big hint moves an exercise to a longer review interval (1, 2, 4, 8, 16 days, the Leitner method); needing help sends it back. Passing again before the review is due is fine but doesn't move the schedule. `nudge next` brings due reviews first, then exercises on topics you struggled with.
 
 ## Does it work? What was measured
 
@@ -83,7 +83,7 @@ No hint revealed corrected code. **Read the second column carefully:** I fixed t
 
 **B. Mutation test** (`python tools/evaluate.py`). Each reference solution was broken automatically in 9 typical ways (flip a comparison, change a number by 1, swap + and -, drop a return value, delete a statement ...), giving 279 broken versions:
 
-- the tests catch 96% (267); the 12 survivors are mostly harmless (for example `n >= best` in a maximum). One was a real gap in the tests (binary search), now fixed with more cases;
+- the tests catch 96% (267); the 12 survivors are mostly harmless (for example `n >= best` in a maximum). One was a gap in the tests (binary search missed most positions), now covered; the tests still don't check speed, so a slow linear search passes;
 - for 66% of caught versions the top hint names a specific cause rather than the generic "trace it by hand";
 - 0 hints at levels 1-4 repeat a line of the reference solution (also enforced by a test).
 
@@ -103,13 +103,14 @@ Add your own: copy a file in `nudge/exercises/`, or add a definition to `tools/b
 - **Python only**, functions that take and return plain data (numbers, text, lists, dictionaries).
 - Float versus int slips inside a function (for example `n / 10` instead of `n // 10`) can go unnoticed when the final answer is the same.
 - Anyone can read the solutions in `nudge/exercises/*.json`. The lock is a nudge, not a safe.
+- The last approach hint of an exercise (level 7 in most) is a step-by-step plan in words, which for some exercises is close to pseudo-code. Levels 1-4 never contain a line of the solution; that is tested.
 - No study with real learners has been done. Whether graded hints teach better than other feedback is untested here.
 
 ## Development
 
 ```bash
 python -m pip install -e ".[dev]"
-python -m pytest -q                      # 89 tests
+python -m pytest -q                      # 110 tests
 python -m nudge validate                 # exercise sanity check
 python tools/build_exercises.py          # regenerate exercises/*.json from the definitions
 python tools/evaluate.py                 # mutation test

@@ -151,11 +151,85 @@ def test_solve_with_big_hint_starts_in_box_1(tmp_path):
 
 
 def test_review_moves_up_and_a_struggle_moves_back(tmp_path):
+    d0 = date(2026, 1, 1)
+    make_progress(tmp_path, d0).record_pass("total")  # box 2, due in 2 days
+    p = Progress(tmp_path / "p.json", today=d0 + timedelta(days=3))
+    assert p.record_pass("total")["box"] == 3  # a real review, passed
+    p = Progress(tmp_path / "p.json", today=d0 + timedelta(days=9))
+    p.record_hint("total", 4)
+    assert p.record_pass("total")["box"] == 1  # needed help: back to the start
+
+
+def test_passing_again_before_it_is_due_does_not_move_the_box(tmp_path):
     p = make_progress(tmp_path, date(2026, 1, 1))
     p.record_pass("total")
-    assert p.record_pass("total")["box"] == 3
-    p.record_hint("total", 4)
-    assert p.record_pass("total")["box"] == 1
+    for _ in range(5):
+        info = p.record_pass("total")
+        assert info["not_due"] and info["box"] == 2
+    assert p.ex("total")["reviews"] == 0
+
+
+def test_rerunning_an_unchanged_file_is_not_a_new_attempt(tmp_path):
+    p = make_progress(tmp_path, date(2026, 1, 1))
+    for _ in range(6):
+        p.record_fail("total", "x", [], "abc123")
+    assert p.ex("total")["fails"] == 1
+    p.record_fail("total", "x", [], "def456")
+    assert p.ex("total")["fails"] == 2
+
+
+def test_next_hint_needs_a_check_in_between(tmp_path):
+    p = make_progress(tmp_path, date(2026, 1, 1))
+    assert p.hint_allowed("total")  # the first hint is always available
+    p.record_hint("total", 1)
+    assert not p.hint_allowed("total")
+    p.record_fail("total", "x", [], "h1")
+    assert p.hint_allowed("total")
+
+
+@pytest.mark.parametrize("raw", [
+    None, [], "text", {"exercises": []}, {"exercises": {"total": None}}, {"exercises": {"total": {}}},
+    {"exercises": {"total": {"fails": "3", "due": 5, "solved": True, "box": "x"}}},
+    {"exercises": {}, "concept_trouble": []}, {"exercises": {}, "concept_trouble": {"loops": "x"}},
+    {"exercises": {"gone": {"solved": True}}},
+])
+def test_any_progress_shape_is_usable(raw, tmp_path):
+    p = Progress(data=raw, today=date(2026, 1, 1))
+    p.due(EXS), p.next_up(EXS), p.weakest_concepts(), p.solved_ids()
+    p.record_fail("total", "x", ["loops"], "h")
+    p.record_pass("total")
+
+
+def test_cli_survives_wrongly_shaped_progress_file(workdir, capsys):
+    (workdir / "home").mkdir()
+    (workdir / "home" / "progress.json").write_text('{"exercises": {"total": null, "x": {"solved": true}}, "concept_trouble": []}', encoding="utf-8")
+    for cmd in (["list"], ["stats"], ["next"], ["solution", "total"]):
+        assert main(cmd) in (0, 1)
+
+
+def test_solution_stays_locked_when_nothing_changes(workdir, capsys):
+    main(["start", "digit_sum"])
+    for _ in range(4):
+        main(["check", "digit_sum"])
+    for _ in range(6):
+        main(["hint", "digit_sum"])
+    capsys.readouterr()
+    assert main(["solution", "digit_sum"]) == 1
+    assert "more failed check" in capsys.readouterr().out
+
+
+def test_cli_odd_files_do_not_crash(workdir, capsys):
+    for data in (b"# caf\xe9 \x81\ndef total(n): return 0\n", b"def total(n):\n    return 0\x00\n", b"", b"\xff\xfe\x00"):
+        (workdir / "total.py").write_bytes(data)
+        assert main(["check", "total"]) in (0, 1)
+    (workdir / "total.py").unlink()
+    (workdir / "average").mkdir()
+    assert main(["check", "average"]) == 2
+
+
+def test_a_hung_program_stops_after_the_first_timeout():
+    r = run("def total(numbers):\n    while True:\n        pass\n", TOTAL, limit=0.3)
+    assert len(r.cases) == 1 and r.cases[0].error["type"] == "Timeout"
 
 
 def test_due_and_next_prefer_reviews(tmp_path):
