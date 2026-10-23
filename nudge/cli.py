@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -19,10 +20,14 @@ def out(*a) -> None:
 
 
 def _read(path: Path) -> str:
-    try:
-        return path.read_text(encoding="utf-8-sig")
-    except UnicodeDecodeError:
-        return path.read_text(encoding="cp1252")
+    """Students' editors save UTF-8 (sometimes with a BOM) or Windows-1252; never fail on odd bytes."""
+    data = path.read_bytes()
+    for enc in ("utf-8-sig", "cp1252"):
+        try:
+            return data.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return data.decode("utf-8", errors="replace")
 
 
 def resolve(target: str | None, exercise_id_hint: str | None = None) -> tuple[dict, Path]:
@@ -30,31 +35,40 @@ def resolve(target: str | None, exercise_id_hint: str | None = None) -> tuple[di
     if not target:
         raise exlib.ExerciseError("say which exercise, for example: nudge check sum_list")
     p = Path(target)
-    if p.suffix == ".py" or p.exists():
+    if p.suffix == ".py" or p.is_file():
         ex = exlib.get(p.stem)
-        if not p.exists():
+        if not p.is_file():
             raise exlib.ExerciseError(f"{p} doesn't exist yet. Create it with: nudge start {ex['id']}")
         return ex, p
     ex = exlib.get(target)
     path = Path.cwd() / f"{ex['id']}.py"
-    if not path.exists():
+    if not path.is_file():
         raise exlib.ExerciseError(f"there is no {path.name} in this folder yet. Create it with: nudge start {ex['id']}")
     return ex, path
 
 
-def _show_case(ex: dict, c, limit: int = 120) -> None:
+def _clip(text: str, limit: int = 100) -> str:
+    return text if len(text) <= limit else text[: limit - 1] + "…"
+
+
+def _show_case(ex: dict, c) -> None:
     args = ", ".join(repr(a) for a in c.args)
-    label = "hidden test" if c.hidden else "test"
-    out(f"  [FAIL] {ex['function']}({args})"[:limit + 20] + ("  (hidden test)" if c.hidden else ""))
+    out(_clip(f"  [FAIL] {ex['function']}({args})", 110) + ("  (hidden test)" if c.hidden else ""))
     if c.error:
         e = c.error
         where = f" on line {e['line']}" if e.get("line") else ""
-        out(f"         {e['type']}{where}: {e.get('msg', '')}"[:limit + 20])
+        msg = f": {e['msg']}" if e.get("msg") else ""
+        out(_clip(f"         {e['type']}{where}{msg}", 110))
     else:
-        out(f"         expected {c.expected!r}, got {c.got!r}")
+        out(_clip(f"         expected {c.expected!r}, got {c.got!r}", 110))
         if c.printed.strip():
-            out(f"         (your code printed {c.printed.strip()[:60]!r}, but tests read what you return)")
-    del label
+            out(_clip(f"         (your code printed {c.printed.strip()[:60]!r}, but tests read what you return)", 110))
+
+
+def _digest(source: str) -> str:
+    import hashlib
+
+    return hashlib.sha1(source.encode("utf-8", "replace")).hexdigest()[:12]
 
 
 def _diagnose_file(ex: dict, path: Path) -> tuple[RunResult, list[Finding], str]:
@@ -67,7 +81,7 @@ def _diagnose_file(ex: dict, path: Path) -> tuple[RunResult, list[Finding], str]
 def cmd_list(args, prog: Progress) -> int:
     exs = exlib.load_all()
     due = set(prog.due(exs))
-    solved = prog.solved_ids()
+    solved = prog.solved_ids() & set(exs)
     last = None
     for eid, ex in exs.items():
         if ex["level"] != last:
@@ -105,11 +119,14 @@ def cmd_start(args, prog: Progress) -> int:
 
 def cmd_check(args, prog: Progress) -> int:
     ex, path = resolve(args.exercise)
-    result, findings, _ = _diagnose_file(ex, path)
+    result, findings, source = _diagnose_file(ex, path)
     if result.passed:
         info = prog.record_pass(ex["id"])
         n = len(result.cases)
         out(f"[PASS] {ex['id']}: all {n} tests pass.")
+        if info.get("not_due"):
+            out(f"Already solved; the next review is on {info['due']}, so this doesn't change your schedule.")
+            return 0
         if info["first"]:
             out("Solved on your own: no big hints needed." if info["clean"] else "Solved, with help. It will come back for review sooner, which is how it sticks.")
         else:
@@ -118,12 +135,16 @@ def cmd_check(args, prog: Progress) -> int:
         return 0
 
     top = findings[0] if findings else None
-    prog.record_fail(ex["id"], top.code if top else None, sorted({f.concept for f in findings[:2]}))
+    prog.record_fail(ex["id"], top.code if top else None, sorted({f.concept for f in findings[:2]}), _digest(source))
     e = prog.ex(ex["id"])
     ok = sum(c.ok for c in result.cases)
-    out(f"[FAIL] {ex['id']}: {ok} of {len(result.cases)} tests pass.\n")
+    if result.status == "ok" and result.cases:
+        out(f"[FAIL] {ex['id']}: {ok} of {len(ex['cases'])} tests pass.\n")
+    else:
+        out(f"[FAIL] {ex['id']}: the tests could not run.\n")
     if result.status == "syntax":
-        out(f"  Python could not read the file: {result.info.get('msg')} (line {result.info.get('line')})")
+        line = result.info.get("line")
+        out(f"  Python could not read the file: {result.info.get('msg') or 'invalid syntax'}" + (f" (line {line})" if line else ""))
     elif result.status == "no_function":
         out(f"  No function called {ex['function']} found.")
     elif result.status == "load_error":
@@ -147,7 +168,11 @@ def cmd_hint(args, prog: Progress) -> int:
     top = findings[0] if findings else None
     prog.set_hint_target(ex["id"], top.code if top else None)
     e = prog.ex(ex["id"])
-    level = e["hint_level"] if args.again and e["hint_level"] else next_hint(e["hint_level"], top, ex).level
+    again = args.again and e["hint_level"]
+    if not again and not prog.hint_allowed(ex["id"]):
+        out(f"You've seen the current hint. Change your code, run `nudge check {ex['id']}`, and then ask for the next one.\n(`nudge hint {ex['id']} --again` shows the current hint again.)")
+        return 0
+    level = e["hint_level"] if again else next_hint(e["hint_level"], top, ex).level
     h = hint_at(level, top, ex)
     prog.record_hint(ex["id"], h.level)
     out(f"Hint {h.level} of {h.of}: {h.title}\n")
@@ -187,8 +212,8 @@ def cmd_next(args, prog: Progress) -> int:
 
 def cmd_stats(args, prog: Progress) -> int:
     exs = exlib.load_all()
-    solved = prog.solved_ids()
-    clean = sum(1 for i in solved if prog.ex(i)["clean"])
+    solved = prog.solved_ids() & set(exs)
+    clean = sum(1 for i in solved if prog.data["exercises"][i].get("clean"))
     out(f"Solved: {len(solved)} of {len(exs)}   ({clean} on your own)")
     due = prog.due(exs)
     out(f"Reviews due today: {', '.join(due) if due else 'none'}")
@@ -279,3 +304,9 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     except KeyboardInterrupt:
         return 130
+    except BrokenPipeError:
+        try:
+            sys.stdout = open(os.devnull, "w")
+        except OSError:
+            pass
+        return 0

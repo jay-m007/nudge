@@ -69,17 +69,20 @@ def run(source: str, exercise: dict, limit: float = 2.0) -> RunResult:
 
 
 def collect(stdout: str, stderr: str, timed_out: bool, exercise: dict) -> RunResult:
-    """Turn the harness's output lines into a RunResult (also used by the browser version)."""
+    """Turn the harness's output lines into a RunResult."""
     cases = exercise["cases"]
 
     result = RunResult("ok")
     seen: set[int] = set()
+    stopped = False
     for line in stdout.splitlines():
         try:
             msg = json.loads(line)
         except ValueError:
             continue
         kind = msg.get("kind")
+        if kind == "stopped":
+            stopped = True
         if kind in ("syntax", "load_error", "no_function"):
             result.status, result.info = kind, msg
             return result
@@ -104,7 +107,7 @@ def collect(stdout: str, stderr: str, timed_out: bool, exercise: dict) -> RunRes
             )
     # Anything that never reported (Windows, where a hung loop can't be interrupted per case, or a hard crash).
     for i, c in enumerate(cases):
-        if i not in seen:
+        if i not in seen and not stopped:
             if timed_out:
                 err = {"type": "Timeout", "msg": "took too long", "line": None}
             else:

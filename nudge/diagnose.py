@@ -20,6 +20,7 @@ from dataclasses import dataclass
 
 from .runner import CaseResult, RunResult
 
+EDGE_EXAMPLE = {"negative": "edge_negative", "spaces": "case_whitespace", "uppercase": "case_whitespace", "duplicates": "edge_duplicates", "zero": "zero_division", "all-same": "edge_duplicates"}
 EDGE_TAGS = {"empty", "single", "zero", "negative", "duplicates", "one", "edge", "large", "all-same", "none", "short", "tie", "spaces"}
 
 
@@ -43,11 +44,29 @@ def _case_text(exercise: dict, case: CaseResult) -> str:
 
 # ----------------------------------------------------------------------------- syntax
 
-def syntax_findings(info: dict) -> list[Finding]:
+def _unclosed_bracket(source: str) -> int | None:
+    """Line of a bracket that is opened and never closed (or None). Older Pythons only say 'invalid syntax'."""
+    import io
+    import tokenize
+
+    stack: list[tuple[str, int]] = []
+    try:
+        for tok in tokenize.generate_tokens(io.StringIO(source).readline):
+            if tok.type == tokenize.OP:
+                if tok.string in "([{":
+                    stack.append((tok.string, tok.start[0]))
+                elif tok.string in ")]}" and stack:
+                    stack.pop()
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        pass
+    return stack[-1][1] if stack else None
+
+
+def syntax_findings(info: dict, source: str = "") -> list[Finding]:
     msg = info.get("msg", "") or ""
     line = info.get("line")
     text = info.get("text", "") or ""
-    where = f"line {line}" if line else "your file"
+    where = f"line {line}" if line else "somewhere in the file"
     look = f"Python can't read your file: it stopped at {where}. (The real problem is sometimes on the line just above.)"
     low = msg.lower()
     if re.search(r"\belse\s+if\b", text):
@@ -56,11 +75,14 @@ def syntax_findings(info: dict) -> list[Finding]:
         return [Finding("boolean_words", "syntax", 0, line, look, "Python uses the words and, or, not instead of &&, || and !.", f"Line {line}: replace the symbols with and / or / not.", "boolean_words")]
     if re.search(r"\w(\+\+|--)", text):
         return [Finding("increment", "syntax", 0, line, look, "Python has no ++ or --. Add or subtract with += 1 or -= 1.", f"Line {line}: use `x += 1` (or `x -= 1`).", "increment")]
+    opened = _unclosed_bracket(source) if source and low in ("invalid syntax", "unexpected eof while parsing") else None
+    if opened:
+        return [Finding("brackets", "syntax", 0, opened, look, "Look for a bracket, parenthesis or quote that is opened but not closed (or closed twice).", f"The bracket opened on line {opened} is never closed. Count the opening and closing brackets from there.", "brackets")]
     if "expected ':'" in low or (low == "invalid syntax" and re.match(r"\s*(if|elif|else|for|while|def|class|try|except|finally|with)\b[^:]*$", text)):
         return [Finding("syntax_colon", "syntax", 0, line, look, "A line that opens a block (if, for, while, def ...) must end with a colon.", f"Check the end of line {line}: is there a ':' after the condition?", "syntax_colon")]
     if re.match(r"\s*(if|elif|while)\b.*[^=!<>]=[^=]", text) and ("invalid syntax" in low or "maybe you meant '=='" in low or "cannot assign" in low):
         return [Finding("assign_vs_compare", "syntax", 0, line, look, "Inside an if or while you compare values. One '=' stores a value, two '==' compare.", f"On line {line}, the condition uses '=' where it needs '=='.", "assign_vs_compare")]
-    if "unterminated string" in low or "was never closed" in low or "unmatched" in low or "closing parenthesis" in low or "perhaps you forgot a comma" in low:
+    if "unterminated string" in low or "was never closed" in low or "unmatched" in low or "closing parenthesis" in low or "perhaps you forgot a comma" in low or "unexpected eof" in low or "eol while scanning" in low or "end of file" in low:
         return [Finding("brackets", "syntax", 0, line, look, "Look for a bracket, parenthesis or quote that is opened but not closed (or closed twice).", f"Count the opening and closing brackets and quotes on line {line} and the lines around it.", "brackets")]
     if "indent" in low:
         return [Finding("indentation", "syntax", 0, line, look, "Python uses indentation to show what belongs inside a function, loop or if. Lines in the same block must line up.", f"Look at the spaces at the start of line {line} and compare them with the line above.", "indentation")]
@@ -95,7 +117,11 @@ def _self_recursive(tree: ast.AST) -> bool:
 def error_findings(err: dict, tree: ast.AST | None, source: str, where_case: str) -> list[Finding]:
     typ, msg, line = err.get("type", ""), err.get("msg", ""), err.get("line")
     at = f"line {line}" if line else "your code"
-    look = f"Your code raised a {typ} on {at}, when called as {where_case}."
+    article = "an" if typ[:1] in "AEIOU" else "a"
+    if where_case == "loading your file":
+        look = f"Your file raised {article} {typ} on {at} as soon as it was run."
+    else:
+        look = f"Your code raised {article} {typ} on {at}, when called as {where_case}."
     if typ == "NameError":
         m = re.search(r"name '(\w+)'", msg)
         name = m.group(1) if m else "?"
@@ -214,7 +240,8 @@ def lint_findings(tree: ast.AST, exercise: dict) -> list[Finding]:
                     out.append(Finding("mutate_while_iterating", "lists", 4, m.lineno, "Some items get skipped or the loop misbehaves.", "Deleting from a list while looping over it shifts the items under the loop's feet.", f"Line {m.lineno}: you delete from '{name}' while looping over it. Build a new list instead.", "mutate_while_iterating"))
                     break
 
-    # reusing a built-in's name
+    # reusing a built-in's name (only a problem if the built-in is then called)
+    called = {c.func.id for c in ast.walk(fn) if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)}
     for n in ast.walk(fn):
         targets = []
         if isinstance(n, ast.Assign):
@@ -222,17 +249,33 @@ def lint_findings(tree: ast.AST, exercise: dict) -> list[Finding]:
         elif isinstance(n, ast.For) and isinstance(n.target, ast.Name):
             targets = [n.target]
         elif isinstance(n, ast.arg):
-            if n.arg in BUILTIN_NAMES:
+            if n.arg in BUILTIN_NAMES and n.arg in called:
                 out.append(Finding("shadow_builtin", "names", 4, n.lineno, "A built-in function seems to stop working inside your function.", "Naming a variable like a built-in (list, sum, max, str ...) hides the built-in.", f"Line {n.lineno}: the parameter '{n.arg}' shares its name with a built-in. Pick another name.", "shadow_builtin"))
             continue
         for t in targets:
-            if t.id in BUILTIN_NAMES:
+            if t.id in BUILTIN_NAMES and t.id in called:
                 out.append(Finding("shadow_builtin", "names", 4, t.lineno, "A built-in function seems to stop working inside your function.", "Naming a variable like a built-in (list, sum, max, str ...) hides the built-in.", f"Line {t.lineno}: the variable '{t.id}' shares its name with a built-in. Pick another name.", "shadow_builtin"))
 
     # mutable default argument
-    for d in fn.args.defaults + [x for x in fn.args.kw_defaults if x is not None]:
-        if isinstance(d, (ast.List, ast.Dict, ast.Set)):
+    positional = [a.arg for a in fn.args.args]
+    defaulted = dict(zip(positional[len(positional) - len(fn.args.defaults):], fn.args.defaults))
+    changed_names = set()
+    for m in ast.walk(fn):
+        if isinstance(m, ast.Call) and isinstance(m.func, ast.Attribute) and isinstance(m.func.value, ast.Name) and m.func.attr in ("append", "extend", "add", "insert", "update", "pop", "remove", "clear", "setdefault"):
+            changed_names.add(m.func.value.id)
+        if isinstance(m, (ast.Assign, ast.AugAssign)):
+            for t in (m.targets if isinstance(m, ast.Assign) else [m.target]):
+                if isinstance(t, ast.Subscript) and isinstance(t.value, ast.Name):
+                    changed_names.add(t.value.id)
+    for name_, d in defaulted.items():
+        if isinstance(d, (ast.List, ast.Dict, ast.Set)) and name_ in changed_names:
             out.append(Finding("mutable_default", "functions", 4, d.lineno, "The function gives different answers when you call it twice in a row.", "A default value like [] is created once and shared between all calls.", f"Line {d.lineno}: use None as the default and create the list inside the function.", "mutable_default"))
+
+    # global state keeps its value between calls
+    for g in ast.walk(fn):
+        if isinstance(g, ast.Global):
+            out.append(Finding("global_state", "functions", 4, g.lineno, "Your function's answer depends on earlier calls, not only on its input.", "A global variable keeps its value between calls, so the second call starts where the first one ended.", f"Line {g.lineno}: '{', '.join(g.names)}' is global. Create the variable inside the function so every call starts fresh.", "global_state"))
+            break
 
     # ignores its input
     used = {n.id for n in ast.walk(fn) if isinstance(n, ast.Name)}
@@ -434,7 +477,7 @@ def answer_findings(exercise: dict, result: RunResult) -> list[Finding]:
     look_generic = f"Your function gave a wrong answer for {ex_text}."
 
     if all(c.got is None for c in failing) and any(c.expected is not None for c in failing):
-        printed_match = any(c.printed.strip() and (c.printed.strip() == str(c.expected) or str(c.expected) in c.printed) for c in failing)
+        printed_match = any(c.printed.strip() and c.printed.strip() == str(c.expected) for c in failing)
         if printed_match:
             out.append(Finding("return_vs_print", "return-values", 5, None, "Your function printed the right thing, but the test can't see printed text. It looks at what is returned.", "print displays a value; return hands it back to the caller.", "Replace the print(...) that shows the answer with return ...", "return_vs_print"))
         else:
@@ -472,7 +515,7 @@ def answer_findings(exercise: dict, result: RunResult) -> list[Finding]:
     expected_values = {repr(c.expected) for c in result.cases}
     if len(got_values) == 1 and len(expected_values) > 1 and len(result.cases) > 2:
         only = next(iter(got_values))
-        out.append(Finding("constant_answer", "functions", 6, None, f"Your function gives the same answer ({only}) for every input.", "The answer should depend on the input. If everything ends up the same, something at the very start of the calculation is probably wrong (a starting value, or what the smallest case returns), and everything built on it inherits the mistake.", "Check the first thing your function sets or returns: a starting value of 0 in a product, or a base case that returns the wrong value, makes every later step give that same result.", "constant_answer"))
+        out.append(Finding("constant_answer", "functions", 6, None, f"Your function gives the same answer ({only}) for every input.", "The answer should depend on the input. If everything ends up the same, look at where the returned value comes from: a starting value that never really changes, a counter that is never increased, a base case with the wrong value, or the wrong variable returned at the end.", "Follow the returned value backwards to where it is first set. Does anything on the way change it using the input? A product that starts at 0, a counter you forgot to add to, or returning a different variable than the one you built would all give the same answer every time.", "constant_answer"))
 
     # which kind of input fails?
     bad_tags = {c.tag for c in failing if c.tag}
@@ -483,7 +526,8 @@ def answer_findings(exercise: dict, result: RunResult) -> list[Finding]:
         tag = sorted(edge_bad, key=lambda t: (-counts[t], t))[0]
         specific = exercise.get("edge_hints", {}).get(tag)
         names = " and ".join(f"'{t}'" for t in sorted(edge_bad, key=lambda t: (-counts[t], t)))
-        out.append(Finding(f"edge_{tag}", "edge-cases", 6, None, f"Your function works on typical inputs but fails on special ones: {names} input, like {_case_text(exercise, next(c for c in failing if c.tag == tag))}.", specific or "Test your idea on the smallest and strangest inputs: empty, one item, zero, negative, repeated values.", specific or "Walk through your code by hand with that special input and see which line behaves differently from what you assumed.", "edge_empty"))
+        case_ex = _case_text(exercise, next(c for c in failing if c.tag == tag))
+        out.append(Finding(f"edge_{tag}", "edge-cases", 6, None, f"Your function works on typical inputs but fails on special ones: {names} input, like {case_ex}.", specific or "Test your idea on the smallest and strangest inputs: empty, one item, zero, negative, repeated values.", f"Trace {case_ex} through your code by hand. Find the first line that behaves differently from what you assumed for this kind of input.", EDGE_EXAMPLE.get(tag, "edge_empty")))
     elif not out and (sep := separating_feature(result)):
         feat, fcases = sep
         tag, name, advice = FEATURES[feat]
@@ -492,8 +536,8 @@ def answer_findings(exercise: dict, result: RunResult) -> list[Finding]:
         out.append(Finding(f"fails_on_{feat.replace(' ', '_')}", "edge-cases", 6, None,
                            f"The inputs that fail have something in common: {name} (for example {ex_case}). Inputs without it mostly pass.",
                            specific or advice,
-                           specific or f"Trace {ex_case} by hand and watch what each line does with the {name}. That is where your code stops doing what you expect.",
-                           "edge_empty"))
+                           f"Trace {ex_case} by hand and watch what each line does with the {name}. That is where your code stops doing what you expect.",
+                           EDGE_EXAMPLE.get(tag, "edge_empty")))
     elif failing and all(c.hidden for c in failing) and good_tags:
         out.append(Finding("hidden_only", "edge-cases", 7, None, "Your function passes the examples you can see but fails on others.", "Your idea may only work for the simple inputs. Think about larger or trickier ones.", "Try bigger inputs, repeated values, negative numbers and empty inputs on your own.", "edge_empty"))
 
@@ -553,11 +597,11 @@ def _tag(findings: list[Finding], origin: str) -> list[Finding]:
 def diagnose(source: str, exercise: dict, result: RunResult) -> list[Finding]:
     """All findings for a failing submission, most useful first."""
     if result.status == "syntax":
-        return _tag(syntax_findings(result.info), "syntax")
+        return _tag(syntax_findings(result.info, source), "syntax")
     tree: ast.AST | None
     try:
         tree = ast.parse(source)
-    except SyntaxError:
+    except (SyntaxError, ValueError, RecursionError, MemoryError):
         tree = None
     findings: list[Finding] = []
     if result.status == "load_error":

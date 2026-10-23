@@ -139,8 +139,20 @@ EXAMPLES: dict[str, tuple[str, str]] = {
         "int('3') + 1        # 4: convert before doing arithmetic\nstr(4)              # '4': convert when text is wanted",
     ),
     "constant_answer": (
-        "If the answer never changes, the input isn't being used",
-        "def double(x):\n    return x * 2     # depends on x\n# return 8 would only be right when x is 4",
+        "When every answer is the same, check where the answer comes from",
+        "def product(values):\n    result = 0          # starts at 0: 0 x anything is 0, forever\n    for v in values:\n        result *= v\n    return result        # (returning v here would be the wrong variable)",
+    ),
+    "global_state": (
+        "Variables made inside the function start fresh on every call",
+        "def count_big(values):\n    big = 0               # new on every call\n    for v in values:\n        if v > 10:\n            big += 1\n    return big",
+    ),
+    "edge_negative": (
+        "A starting value of 0 beats every negative number",
+        "def smallest(values):\n    best = values[0]       # a real item from the list, not 0 or 100\n    for v in values:\n        if v < best:\n            best = v\n    return best",
+    ),
+    "edge_duplicates": (
+        "Decide what repeated values should do, then check each branch",
+        "def second_name(names):\n    unique = sorted(set(names))   # repeats removed first\n    return unique[1] if len(unique) > 1 else None",
     ),
     "hardcoded": (
         "Compute the answer from the input; don't write the answers in",
