@@ -1,0 +1,33 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.9", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest -q
+      - name: every exercise is valid
+        run: python -m nudge validate
+      - name: smoke test
+        shell: bash
+        run: |
+          mkdir work && cd work
+          export NUDGE_HOME="$PWD/home"
+          python -m nudge list
+          python -m nudge start total
+          python -m nudge check total || true
+          python -m nudge hint total
+          python -m nudge stats

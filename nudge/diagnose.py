@@ -15,6 +15,7 @@ import ast
 import builtins
 import difflib
 import re
+from collections import Counter
 from dataclasses import dataclass
 
 from .runner import CaseResult, RunResult
@@ -49,6 +50,12 @@ def syntax_findings(info: dict) -> list[Finding]:
     where = f"line {line}" if line else "your file"
     look = f"Python can't read your file: it stopped at {where}. (The real problem is sometimes on the line just above.)"
     low = msg.lower()
+    if re.search(r"\belse\s+if\b", text):
+        return [Finding("elif", "syntax", 0, line, look, "Python has no 'else if'. It is spelled as one word.", f"Line {line}: write `elif ...:` instead of `else if ...:`.", "elif")]
+    if "&&" in text or "||" in text or re.search(r"(^|[\s(])!(?!=)", text):
+        return [Finding("boolean_words", "syntax", 0, line, look, "Python uses the words and, or, not instead of &&, || and !.", f"Line {line}: replace the symbols with and / or / not.", "boolean_words")]
+    if re.search(r"\w(\+\+|--)", text):
+        return [Finding("increment", "syntax", 0, line, look, "Python has no ++ or --. Add or subtract with += 1 or -= 1.", f"Line {line}: use `x += 1` (or `x -= 1`).", "increment")]
     if "expected ':'" in low or (low == "invalid syntax" and re.match(r"\s*(if|elif|else|for|while|def|class|try|except|finally|with)\b[^:]*$", text)):
         return [Finding("syntax_colon", "syntax", 0, line, look, "A line that opens a block (if, for, while, def ...) must end with a colon.", f"Check the end of line {line}: is there a ':' after the condition?", "syntax_colon")]
     if re.match(r"\s*(if|elif|while)\b.*[^=!<>]=[^=]", text) and ("invalid syntax" in low or "maybe you meant '=='" in low or "cannot assign" in low):
@@ -190,6 +197,8 @@ def lint_findings(tree: ast.AST, exercise: dict) -> list[Finding]:
                 suspicious = True  # range(1, len(x))
             if len(a) >= 2 and isinstance(a[1], ast.BinOp) and "len(" in ast.unparse(a[1]):
                 suspicious = True
+            if suspicious and isinstance(n.target, ast.Name) and _uses_neighbour(n, n.target.id):
+                suspicious = False  # comparing x[i] with x[i-1] or x[i+1] legitimately starts at 1 or stops at len - 1
             if suspicious:
                 out.append(Finding("off_by_one", "indexing", 5, n.lineno, "Your answer is close, but one item too many or too few seems to be involved.", "Check where your loop starts and where it stops. range(a, b) includes a but not b.", f"Line {n.lineno}: `for ... in {text}` - list the exact values the loop variable takes for a list of 3 items, and compare with the ones you need.", "off_by_one"))
 
@@ -240,6 +249,21 @@ def lint_findings(tree: ast.AST, exercise: dict) -> list[Finding]:
     if any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "input" for n in ast.walk(fn)):
         out.append(Finding("input_call", "functions", 4, fn.lineno, "Your function waits for the keyboard.", "A function should work on its parameters, not ask the user.", "Remove input() from the function and use the parameters.", "input_call"))
 
+    # a call whose result is thrown away, when the result is the whole point
+    PURE_METHODS = {"lower", "upper", "strip", "lstrip", "rstrip", "replace", "title", "capitalize", "split", "join", "copy", "casefold"}
+    PURE_FUNCS = {"sorted", "reversed", "abs", "round", "len", "sum", "max", "min", "list", "set", "int", "str", "float", "tuple"}
+    for stmt in ast.walk(fn):
+        if isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call):
+            c = stmt.value
+            name = None
+            if isinstance(c.func, ast.Name) and (c.func.id in PURE_FUNCS or c.func.id == fn.name):
+                name = c.func.id
+            elif isinstance(c.func, ast.Attribute) and c.func.attr in PURE_METHODS:
+                name = "." + c.func.attr + "()"
+            if name:
+                out.append(Finding("discarded_result", "return-values", 4, stmt.lineno, "Something your code computes seems to disappear.", "Some calls give back a new value and change nothing in place. If you don't store or return that value, it is lost.", f"Line {stmt.lineno}: you call {name} but do nothing with what it gives back. Assign it to a variable, add it to your result, or return it.", "discarded_result"))
+                break
+
     # does not return on every path
     if returns and not _ends_with_return(fn.body) and not _ends_with_raise(fn.body):
         out.append(Finding("missing_return", "return-values", 5, fn.body[-1].lineno, "On some inputs your function gives back None.", "Every path through the function must end in a return. If no if-branch applies, Python quietly returns None.", f"The function can reach the end (after line {fn.body[-1].lineno}) without returning. What should it return then?", "none_attribute"))
@@ -252,7 +276,9 @@ def lint_findings(tree: ast.AST, exercise: dict) -> list[Finding]:
     # recursion without a visible base case
     calls_self = [n for n in ast.walk(fn) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == fn.name]
     if calls_self:
-        has_stop = any(isinstance(s, ast.If) and _has_return(s) for s in fn.body)
+        has_stop = any(isinstance(n, ast.If) and _has_return(n) for n in ast.walk(fn)) or any(
+            isinstance(l, ast.For) and any(isinstance(c, ast.Call) and isinstance(c.func, ast.Name) and c.func.id == fn.name for c in ast.walk(l)) for l in ast.walk(fn)
+        )  # a recursive call inside a loop over the input is "structural" recursion: it stops when the loop runs out
         if not has_stop:
             out.append(Finding("recursion_base", "recursion", 4, calls_self[0].lineno, "The function may never stop calling itself.", "A recursive function needs an if that returns without recursing: the base case.", f"Line {calls_self[0].lineno}: before this recursive call, there should be an if that handles the smallest input and returns.", "recursion_base"))
 
@@ -270,6 +296,16 @@ def lint_findings(tree: ast.AST, exercise: dict) -> list[Finding]:
             if names and not (names & changed) and not has_exit and not (isinstance(n.test, ast.Constant) and n.test.value):
                 out.append(Finding("infinite_loop", "loops", 3, n.lineno, "Your program probably never finishes.", "Nothing inside the while loop changes the values its condition looks at.", f"Line {n.lineno}: the condition uses {', '.join(sorted(names))}, but none of them changes in the loop body.", "infinite_loop"))
     return out
+
+
+def _uses_neighbour(loop: ast.For, var: str) -> bool:
+    """Does the loop body index something with i+1 or i-1 (looking at a neighbour)?"""
+    for n in _body_walk(loop.body):
+        if isinstance(n, ast.Subscript):
+            sl = n.slice
+            if isinstance(sl, ast.BinOp) and any(isinstance(x, ast.Name) and x.id == var for x in ast.walk(sl)):
+                return True
+    return False
 
 
 def _ends_with_return(body: list[ast.stmt]) -> bool:
@@ -410,7 +446,7 @@ def answer_findings(exercise: dict, result: RunResult) -> list[Finding]:
     pairs = [(c.got, c.expected) for c in failing]
     if all(_num(g) and _num(e) for g, e in pairs):
         diffs = {g - e for g, e in pairs}
-        if len(diffs) == 1 and diffs <= {1, -1}:
+        if len(diffs) == 1 and diffs <= {1, -1} and len(failing) >= 3:
             more = "more" if next(iter(diffs)) > 0 else "less"
             out.append(Finding("off_by_one", "indexing", 5, None, f"Your answer is always exactly 1 {more} than expected (for example {ex_text}).", "A result that is consistently one off usually means a loop started or stopped one step early or late, or a count started at the wrong number.", "Look at where your loop starts and ends, and the starting value of your counter or total.", "off_by_one"))
         if any(isinstance(g, float) and isinstance(e, int) and not isinstance(e, bool) for g, e in pairs):
@@ -421,6 +457,10 @@ def answer_findings(exercise: dict, result: RunResult) -> list[Finding]:
         elif all(len(g) != len(e) for g, e in pairs):
             more = all(len(g) > len(e) for g, e in pairs)
             out.append(Finding("off_by_one", "indexing", 6, None, f"Your list has {'too many' if more else 'too few'} items (for example {ex_text}).", "Think about which items your code adds or skips by mistake.", "Walk through the first failing example by hand: which item does your code add (or skip) that it shouldn't (or should)?", "off_by_one"))
+    if all(isinstance(g, (str, list)) and isinstance(e, type(g)) and len(g) < len(e) and e[: len(g)] == g for g, e in pairs):
+        out.append(Finding("incomplete_output", "loops", 5, None, f"Your answer is a correct beginning, but it stops early (for example {ex_text}).", "The end of the answer is missing. Either the loop stops one step too soon (check where it starts and stops, including the very first and last items), or something held after the loop (a final count, a leftover list) is never added.", "Compare the last piece of the expected answer with yours. Which step of your code should have produced that piece, and does the loop reach it?", "incomplete_output"))
+    if all(isinstance(g, str) and isinstance(e, str) and len(g) == len(e) and sorted(g) == sorted(e) for g, e in pairs):
+        out.append(Finding("order", "strings", 5, None, f"Your text has the right characters, but arranged differently (for example {ex_text}).", "Check the order in which you put the pieces together.", "Compare, piece by piece, the order your code joins things with the order the exercise shows.", "order"))
     if all(isinstance(g, str) and isinstance(e, str) for g, e in pairs):
         if all(g.strip().lower() == e.strip().lower() for g, e in pairs):
             out.append(Finding("case_whitespace", "strings", 5, None, f"Your text is almost right: only capital letters or spaces differ (for example {ex_text}).", "Text must match exactly, including upper/lower case and spaces.", "Check .lower()/.upper() and .strip() where you build the result.", "case_whitespace"))
@@ -431,16 +471,19 @@ def answer_findings(exercise: dict, result: RunResult) -> list[Finding]:
     got_values = {repr(c.got) for c in result.cases if not c.error}
     expected_values = {repr(c.expected) for c in result.cases}
     if len(got_values) == 1 and len(expected_values) > 1 and len(result.cases) > 2:
-        out.append(Finding("constant_answer", "functions", 6, None, "Your function gives the same answer for every input.", "The answer should depend on the input.", "Make sure the value you return is computed from the parameters.", "constant_answer"))
+        only = next(iter(got_values))
+        out.append(Finding("constant_answer", "functions", 6, None, f"Your function gives the same answer ({only}) for every input.", "The answer should depend on the input. If everything ends up the same, something at the very start of the calculation is probably wrong (a starting value, or what the smallest case returns), and everything built on it inherits the mistake.", "Check the first thing your function sets or returns: a starting value of 0 in a product, or a base case that returns the wrong value, makes every later step give that same result.", "constant_answer"))
 
     # which kind of input fails?
     bad_tags = {c.tag for c in failing if c.tag}
     good_tags = {c.tag for c in result.cases if c.ok and c.tag}
     edge_bad = bad_tags & EDGE_TAGS
     if edge_bad and not (bad_tags - EDGE_TAGS):
-        tag = sorted(edge_bad)[0]
+        counts = Counter(c.tag for c in failing if c.tag in EDGE_TAGS)
+        tag = sorted(edge_bad, key=lambda t: (-counts[t], t))[0]
         specific = exercise.get("edge_hints", {}).get(tag)
-        out.append(Finding(f"edge_{tag}", "edge-cases", 6, None, f"Your function works on typical inputs but fails on a special one: '{tag}' input, like {ex_text if first.tag == tag else _case_text(exercise, next(c for c in failing if c.tag == tag))}.", specific or "Test your idea on the smallest and strangest inputs: empty, one item, zero, negative, repeated values.", specific or "Walk through your code by hand with that special input and see which line behaves differently from what you assumed.", "edge_empty"))
+        names = " and ".join(f"'{t}'" for t in sorted(edge_bad, key=lambda t: (-counts[t], t)))
+        out.append(Finding(f"edge_{tag}", "edge-cases", 6, None, f"Your function works on typical inputs but fails on special ones: {names} input, like {_case_text(exercise, next(c for c in failing if c.tag == tag))}.", specific or "Test your idea on the smallest and strangest inputs: empty, one item, zero, negative, repeated values.", specific or "Walk through your code by hand with that special input and see which line behaves differently from what you assumed.", "edge_empty"))
     elif not out and (sep := separating_feature(result)):
         feat, fcases = sep
         tag, name, advice = FEATURES[feat]

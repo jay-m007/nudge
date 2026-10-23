@@ -203,6 +203,10 @@ ex("binary_search", 3, "Binary search", ["loops", "searching", "indexing"], "bin
     "Plan: low starts at the first position and high at the last; while low has not passed high: take the middle position (low and high added, halved, rounded down); if that item is the target return its position; if it's too small move low just past the middle, otherwise move high just before it; if the loop ends, return -1."],
    {"edge": "The first and last items are the places where off-by-one mistakes hide. Check `low <= high` (not `<`) and the +1 / -1 when moving.", "empty": "With an empty list the range is already empty. Check that high starts at -1 and the loop doesn't run.", "none": "If the target isn't there, the loop must end and return -1 instead of running forever."})
 
+_bs = next(e for e in EXERCISES if e["id"] == "binary_search")
+_lst = list(range(10, 100, 10))  # every position, plus misses on both ends and in the gaps
+_bs["cases"] += [C([_lst, t], "basic", True) for t in _lst + [5, 15, 55, 95, 105]]
+
 ex("gcd", 3, "Greatest common divisor", ["loops", "numbers", "algorithms"], "gcd",
    "Write gcd(a, b) that returns the greatest common divisor of two positive whole numbers: the biggest number that divides both exactly.\nExample: gcd(12, 18) = 6.",
    "def gcd(a, b):\n    pass\n",

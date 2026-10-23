@@ -32,12 +32,12 @@ BUGS = [
     ("count_vowels", "counts consonants", "def count_vowels(text):\n    count = 0\n    for ch in text.lower():\n        if ch not in 'aeiou':\n            count += 1\n    return count\n", {"wrong_answer"}),
     # --- reverse_text
     ("reverse_text", "assigns into a string", "def reverse_text(text):\n    n = len(text)\n    for i in range(n):\n        text[i] = text[n - 1 - i]\n    return text\n", {"string_immutable"}),
-    ("reverse_text", "does not reverse", "def reverse_text(text):\n    result = ''\n    for ch in text:\n        result = result + ch\n    return result\n", {"wrong_answer"}),
+    ("reverse_text", "does not reverse", "def reverse_text(text):\n    result = ''\n    for ch in text:\n        result = result + ch\n    return result\n", {"wrong_answer", "order"}),
     # --- average
     ("average", "no empty check", "def average(numbers):\n    return sum(numbers) / len(numbers)\n", {"zero_division"}),
     ("average", "whole-number division", "def average(numbers):\n    if not numbers:\n        return 0.0\n    return sum(numbers) // len(numbers)\n", {"wrong_type", "wrong_answer"}),
     # --- fizzbuzz
-    ("fizzbuzz", "range stops one short", "def fizzbuzz(n):\n    result = []\n    for i in range(1, n):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result\n", {"off_by_one"}),
+    ("fizzbuzz", "range stops one short", "def fizzbuzz(n):\n    result = []\n    for i in range(1, n):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result\n", {"off_by_one", "incomplete_output"}),
     ("fizzbuzz", "checks 3 before 15", "def fizzbuzz(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        elif i % 15 == 0:\n            result.append('FizzBuzz')\n        else:\n            result.append(str(i))\n    return result\n", {"wrong_answer"}),
     # --- is_palindrome
     ("is_palindrome", "ignores case", "def is_palindrome(text):\n    cleaned = text.replace(' ', '')\n    return cleaned == cleaned[::-1]\n", {"edge_uppercase", "edge_spaces", "fails_on_capital_letters"}),
@@ -69,7 +69,7 @@ BUGS = [
     # --- two_sum
     ("two_sum", "return None inside outer loop", "def two_sum(numbers, target):\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if numbers[i] + numbers[j] == target:\n                return [i, j]\n        return None\n", {"return_in_loop"}),
     # --- merge_sorted
-    ("merge_sorted", "forgets the leftovers", "def merge_sorted(a, b):\n    result = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    return result\n", {"off_by_one"}),
+    ("merge_sorted", "forgets the leftovers", "def merge_sorted(a, b):\n    result = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    return result\n", {"off_by_one", "incomplete_output"}),
     ("merge_sorted", "sorts the caller's list", "def merge_sorted(a, b):\n    a.extend(b)\n    a.sort()\n    return a\n", {"mutated_input"}),
     # --- binary_search
     ("binary_search", "low = mid never ends", "def binary_search(items, target):\n    low, high = 0, len(items) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if items[mid] == target:\n            return mid\n        if items[mid] < target:\n            low = mid\n        else:\n            high = mid - 1\n    return -1\n", {"infinite_loop"}),
