@@ -65,6 +65,12 @@ def run(source: str, exercise: dict, limit: float = 2.0) -> RunResult:
         out = e.stdout or ""
         stdout = out.decode("utf-8", "replace") if isinstance(out, bytes) else out
         stderr, timed_out = "", True
+    return collect(stdout, stderr, timed_out, exercise)
+
+
+def collect(stdout: str, stderr: str, timed_out: bool, exercise: dict) -> RunResult:
+    """Turn the harness's output lines into a RunResult (also used by the browser version)."""
+    cases = exercise["cases"]
 
     result = RunResult("ok")
     seen: set[int] = set()
