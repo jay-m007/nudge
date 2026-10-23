@@ -1,0 +1,114 @@
+{
+ "id": "is_palindrome",
+ "level": 2,
+ "title": "Is it a palindrome?",
+ "concepts": [
+  "strings",
+  "indexing",
+  "loops"
+ ],
+ "function": "is_palindrome",
+ "prompt": "Write is_palindrome(text) that returns True if the text reads the same forwards and backwards, ignoring capital letters and spaces, otherwise False.\nExample: 'Never odd or even' is a palindrome.",
+ "starter": "def is_palindrome(text):\n    pass\n",
+ "solution": "def is_palindrome(text):\n    cleaned = text.replace(' ', '').lower()\n    left, right = 0, len(cleaned) - 1\n    while left < right:\n        if cleaned[left] != cleaned[right]:\n            return False\n        left += 1\n        right -= 1\n    return True\n",
+ "cases": [
+  {
+   "args": [
+    "madam"
+   ],
+   "expected": true,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "hello"
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    ""
+   ],
+   "expected": true,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "a"
+   ],
+   "expected": true,
+   "tag": "single"
+  },
+  {
+   "args": [
+    "Never odd or even"
+   ],
+   "expected": true,
+   "tag": "spaces"
+  },
+  {
+   "args": [
+    "Racecar"
+   ],
+   "expected": true,
+   "tag": "uppercase"
+  },
+  {
+   "args": [
+    "ab"
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "Was  it  a  car  or  a  cat  I  saw"
+   ],
+   "expected": true,
+   "tag": "spaces",
+   "hidden": true
+  },
+  {
+   "args": [
+    "abcba"
+   ],
+   "expected": true,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    "abca"
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "abcdba"
+   ],
+   "expected": false,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    "aabca"
+   ],
+   "expected": false,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Compare the first letter with the last, the second with the second last, and so on. When can you stop?",
+  "First make the text easy to compare: what should happen to capital letters and spaces before you compare anything?",
+  "Plan: clean the text (lower case, no spaces); then either compare it with its reverse, or walk two positions inwards from both ends and return False at the first mismatch."
+ ],
+ "edge_hints": {
+  "uppercase": "'R' and 'r' differ for Python. Convert the case before comparing.",
+  "spaces": "Spaces must be ignored, so remove them first, otherwise the letters won't line up.",
+  "empty": "An empty text reads the same both ways, so the answer is True."
+ }
+}

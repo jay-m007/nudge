@@ -1,0 +1,83 @@
+{
+ "id": "collatz_steps",
+ "level": 3,
+ "title": "Collatz steps",
+ "concepts": [
+  "loops",
+  "conditionals",
+  "numbers"
+ ],
+ "function": "collatz_steps",
+ "prompt": "Start with a positive whole number n. If it is even, halve it; if it is odd, multiply by 3 and add 1. Repeat until you reach 1.\nWrite collatz_steps(n) that returns how many steps this takes. collatz_steps(1) is 0; collatz_steps(6) is 8 (6, 3, 10, 5, 16, 8, 4, 2, 1).",
+ "starter": "def collatz_steps(n):\n    pass\n",
+ "solution": "def collatz_steps(n):\n    steps = 0\n    while n != 1:\n        if n % 2 == 0:\n            n //= 2\n        else:\n            n = 3 * n + 1\n        steps += 1\n    return steps\n",
+ "cases": [
+  {
+   "args": [
+    6
+   ],
+   "expected": 8,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    1
+   ],
+   "expected": 0,
+   "tag": "one"
+  },
+  {
+   "args": [
+    2
+   ],
+   "expected": 1,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    7
+   ],
+   "expected": 16,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    27
+   ],
+   "expected": 111,
+   "tag": "large"
+  },
+  {
+   "args": [
+    3
+   ],
+   "expected": 7,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    97
+   ],
+   "expected": 118,
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    16
+   ],
+   "expected": 4,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Do 6 by hand and count each arrow. Which two rules do you apply, and when do you stop?",
+  "You don't know in advance how many steps there will be, so a while loop fits. What is the condition to keep going?",
+  "Plan: steps = 0; while n is not 1: if n is even replace it by n // 2, else by 3 * n + 1; add 1 to steps each time; return steps. Use // so n stays a whole number."
+ ],
+ "edge_hints": {
+  "one": "Starting at 1 you're already done: 0 steps. Check your loop condition.",
+  "large": "Large numbers take many steps; if your code seems stuck, check n really changes in every branch."
+ }
+}

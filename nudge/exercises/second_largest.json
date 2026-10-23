@@ -1,0 +1,127 @@
+{
+ "id": "second_largest",
+ "level": 2,
+ "title": "Second largest",
+ "concepts": [
+  "loops",
+  "comparison",
+  "edge-cases"
+ ],
+ "function": "second_largest",
+ "prompt": "Write second_largest(numbers) that returns the second largest DIFFERENT value, or None if there are fewer than two different values.\nExample: [4, 9, 9, 2] -> 4, because the largest is 9.",
+ "starter": "def second_largest(numbers):\n    pass\n",
+ "solution": "def second_largest(numbers):\n    distinct = set(numbers)\n    if len(distinct) < 2:\n        return None\n    distinct.remove(max(distinct))\n    return max(distinct)\n",
+ "cases": [
+  {
+   "args": [
+    [
+     4,
+     9,
+     2
+    ]
+   ],
+   "expected": 4,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     4,
+     9,
+     9,
+     2
+    ]
+   ],
+   "expected": 4,
+   "tag": "duplicates"
+  },
+  {
+   "args": [
+    [
+     7
+    ]
+   ],
+   "expected": null,
+   "tag": "single"
+  },
+  {
+   "args": [
+    []
+   ],
+   "expected": null,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    [
+     5,
+     5,
+     5
+    ]
+   ],
+   "expected": null,
+   "tag": "all-same"
+  },
+  {
+   "args": [
+    [
+     -1,
+     -5,
+     -3
+    ]
+   ],
+   "expected": -3,
+   "tag": "negative"
+  },
+  {
+   "args": [
+    [
+     1,
+     2
+    ]
+   ],
+   "expected": 1,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     3,
+     1,
+     4,
+     1,
+     5,
+     9,
+     2,
+     6
+    ]
+   ],
+   "expected": 6,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    [
+     2,
+     2,
+     1
+    ]
+   ],
+   "expected": 1,
+   "tag": "duplicates",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Imagine a podium: first and second place. If two people tie for first, who is second?",
+  "Duplicates of the largest value must not count as the second largest. How can you get rid of repeated values first?",
+  "Plan: collect the distinct values; if fewer than 2, return None; otherwise take away the biggest one and the biggest of what's left is the answer."
+ ],
+ "edge_hints": {
+  "duplicates": "If the biggest value appears twice, the second largest is still a smaller, different value. Work with distinct values.",
+  "all-same": "If all values are the same there is no second largest; the exercise says what to return.",
+  "single": "One number has no second largest.",
+  "empty": "No numbers, no second largest."
+ }
+}

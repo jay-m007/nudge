@@ -1,0 +1,83 @@
+{
+ "id": "run_length_encode",
+ "level": 3,
+ "title": "Run-length encoding",
+ "concepts": [
+  "strings",
+  "loops",
+  "counting"
+ ],
+ "function": "run_length_encode",
+ "prompt": "Write run_length_encode(text) that compresses repeated neighbouring characters into the character followed by how many times it repeats.\nExample: 'aaabcc' -> 'a3b1c2'. An empty text gives ''.",
+ "starter": "def run_length_encode(text):\n    pass\n",
+ "solution": "def run_length_encode(text):\n    if not text:\n        return ''\n    parts = []\n    current, count = text[0], 1\n    for ch in text[1:]:\n        if ch == current:\n            count += 1\n        else:\n            parts.append(current + str(count))\n            current, count = ch, 1\n    parts.append(current + str(count))\n    return ''.join(parts)\n",
+ "cases": [
+  {
+   "args": [
+    "aaabcc"
+   ],
+   "expected": "a3b1c2",
+   "tag": "basic"
+  },
+  {
+   "args": [
+    ""
+   ],
+   "expected": "",
+   "tag": "empty"
+  },
+  {
+   "args": [
+    "a"
+   ],
+   "expected": "a1",
+   "tag": "single"
+  },
+  {
+   "args": [
+    "abc"
+   ],
+   "expected": "a1b1c1",
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "zzzzzzzzzz"
+   ],
+   "expected": "z10",
+   "tag": "large"
+  },
+  {
+   "args": [
+    "aabbaa"
+   ],
+   "expected": "a2b2a2",
+   "tag": "basic"
+  },
+  {
+   "args": [
+    "aaaaaaaaaaaaaaaaaaaaaaaaab"
+   ],
+   "expected": "a25b1",
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    "xxyzzz"
+   ],
+   "expected": "x2y1z3",
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Read 'aaabcc' aloud: three a's, one b, two c's. What do you need to remember while you read?",
+  "Remember the current character and how many times you've seen it in a row. When the next character differs, what do you do with what you remembered?",
+  "Plan: handle empty text; start with the first character and count 1; for each later character: same -> count + 1; different -> write the character and count to the result and start over; after the loop, don't forget to write the last group."
+ ],
+ "edge_hints": {
+  "empty": "No characters, no groups: return ''.",
+  "single": "One character is one group: the loop body never runs, so the last group must still be written after the loop."
+ }
+}

@@ -1,0 +1,147 @@
+{
+ "id": "flatten",
+ "level": 3,
+ "title": "Flatten nested lists",
+ "concepts": [
+  "recursion",
+  "lists",
+  "types"
+ ],
+ "function": "flatten",
+ "prompt": "Write flatten(nested) that takes a list that may contain other lists (at any depth) and returns one flat list of all the non-list items, in order.\nExample: [1, [2, [3, 4]], 5] -> [1, 2, 3, 4, 5].",
+ "starter": "def flatten(nested):\n    pass\n",
+ "solution": "def flatten(nested):\n    result = []\n    for item in nested:\n        if isinstance(item, list):\n            result.extend(flatten(item))\n        else:\n            result.append(item)\n    return result\n",
+ "cases": [
+  {
+   "args": [
+    [
+     1,
+     [
+      2,
+      [
+       3,
+       4
+      ]
+     ],
+     5
+    ]
+   ],
+   "expected": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    []
+   ],
+   "expected": [],
+   "tag": "empty"
+  },
+  {
+   "args": [
+    [
+     1,
+     2,
+     3
+    ]
+   ],
+   "expected": [
+    1,
+    2,
+    3
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     [
+      []
+     ]
+    ]
+   ],
+   "expected": [],
+   "tag": "empty"
+  },
+  {
+   "args": [
+    [
+     [
+      1
+     ],
+     [
+      2
+     ],
+     [
+      3
+     ]
+    ]
+   ],
+   "expected": [
+    1,
+    2,
+    3
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     1,
+     [
+      2,
+      [
+       3,
+       [
+        4,
+        [
+         5
+        ]
+       ]
+      ]
+     ]
+    ]
+   ],
+   "expected": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    [
+     [],
+     1,
+     [
+      [],
+      2
+     ]
+    ]
+   ],
+   "expected": [
+    1,
+    2
+   ],
+   "tag": "empty",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Look at one item at a time: it's either a plain value or another list. What should you do in each case?",
+  "When the item is a list, you have exactly the same problem again, on a smaller list. That is recursion: the function can call itself.",
+  "Plan: result = []; for each item: if it's a list, add everything from flatten(item); otherwise append the item; return result. isinstance(item, list) tells you which case you're in."
+ ],
+ "edge_hints": {
+  "empty": "Empty lists (even nested ones) contribute nothing. Make sure they don't add an empty list or None to the result."
+ }
+}

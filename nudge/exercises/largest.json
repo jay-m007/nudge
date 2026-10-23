@@ -1,0 +1,115 @@
+{
+ "id": "largest",
+ "level": 1,
+ "title": "Find the largest number",
+ "concepts": [
+  "loops",
+  "comparison",
+  "edge-cases"
+ ],
+ "function": "largest",
+ "prompt": "Write largest(numbers) that returns the biggest number in the list, or None if the list is empty.\nDo not use max().",
+ "starter": "def largest(numbers):\n    pass\n",
+ "solution": "def largest(numbers):\n    if not numbers:\n        return None\n    best = numbers[0]\n    for n in numbers:\n        if n > best:\n            best = n\n    return best\n",
+ "cases": [
+  {
+   "args": [
+    [
+     3,
+     9,
+     2
+    ]
+   ],
+   "expected": 9,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     7
+    ]
+   ],
+   "expected": 7,
+   "tag": "single"
+  },
+  {
+   "args": [
+    []
+   ],
+   "expected": null,
+   "tag": "empty"
+  },
+  {
+   "args": [
+    [
+     -4,
+     -9,
+     -1
+    ]
+   ],
+   "expected": -1,
+   "tag": "negative"
+  },
+  {
+   "args": [
+    [
+     5,
+     5,
+     5
+    ]
+   ],
+   "expected": 5,
+   "tag": "all-same"
+  },
+  {
+   "args": [
+    [
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   ],
+   "expected": 5,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    [
+     9,
+     1,
+     2,
+     3
+    ]
+   ],
+   "expected": 9,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    [
+     -1,
+     -2,
+     -3,
+     -0.5
+    ]
+   ],
+   "expected": -0.5,
+   "tag": "negative",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Think about how you'd find the tallest person in a line: you'd remember the tallest so far and compare each new person.",
+  "You need a variable for 'the biggest so far'. What should its first value be? Be careful: 0 is not always safe.",
+  "Plan: handle the empty list first, start with the first number as the best, then compare every number and replace the best when you find a bigger one."
+ ],
+ "edge_hints": {
+  "empty": "An empty list has no biggest number. The exercise says what to return in that case; check for it before you touch numbers[0].",
+  "negative": "If every number is negative, a starting value of 0 would beat all of them. Start from a number that is really in the list.",
+  "all-same": "When all numbers are equal there's nothing bigger. Check that your comparison still keeps a valid answer."
+ }
+}

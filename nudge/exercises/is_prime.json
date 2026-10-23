@@ -1,0 +1,99 @@
+{
+ "id": "is_prime",
+ "level": 2,
+ "title": "Is it prime?",
+ "concepts": [
+  "loops",
+  "conditionals",
+  "edge-cases"
+ ],
+ "function": "is_prime",
+ "prompt": "Write is_prime(n) that returns True if n is a prime number (greater than 1 and divisible only by 1 and itself), otherwise False.",
+ "starter": "def is_prime(n):\n    pass\n",
+ "solution": "def is_prime(n):\n    if n < 2:\n        return False\n    i = 2\n    while i * i <= n:\n        if n % i == 0:\n            return False\n        i += 1\n    return True\n",
+ "cases": [
+  {
+   "args": [
+    7
+   ],
+   "expected": true,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    10
+   ],
+   "expected": false,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    2
+   ],
+   "expected": true,
+   "tag": "basic"
+  },
+  {
+   "args": [
+    1
+   ],
+   "expected": false,
+   "tag": "one"
+  },
+  {
+   "args": [
+    0
+   ],
+   "expected": false,
+   "tag": "zero"
+  },
+  {
+   "args": [
+    -5
+   ],
+   "expected": false,
+   "tag": "negative"
+  },
+  {
+   "args": [
+    97
+   ],
+   "expected": true,
+   "tag": "large"
+  },
+  {
+   "args": [
+    91
+   ],
+   "expected": false,
+   "tag": "basic",
+   "hidden": true
+  },
+  {
+   "args": [
+    7919
+   ],
+   "expected": true,
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    49
+   ],
+   "expected": false,
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "A number is NOT prime if some smaller number (other than 1) divides it exactly. How can you test 'divides exactly'?",
+  "Check the small cases by hand first: is 0 prime? 1? 2? A negative number? Decide those before the loop.",
+  "Plan: return False for n < 2; then try each possible divisor from 2 upwards; if any divides n exactly return False; if none does return True. You only need divisors up to the square root of n."
+ ],
+ "edge_hints": {
+  "one": "1 is not a prime number: a prime has exactly two divisors. Handle numbers below 2 before the loop.",
+  "zero": "0 and negative numbers are not prime. Handle them before the loop.",
+  "negative": "Negative numbers are never prime. Handle them before the loop."
+ }
+}

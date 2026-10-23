@@ -1,0 +1,164 @@
+{
+ "id": "rotate_list",
+ "level": 3,
+ "title": "Rotate a list",
+ "concepts": [
+  "lists",
+  "indexing",
+  "modulo"
+ ],
+ "function": "rotate_list",
+ "prompt": "Write rotate_list(items, k) that returns a new list with the items moved k places to the right; the items that fall off the end come back at the front. k can be larger than the list.\nExample: ([1, 2, 3, 4, 5], 2) -> [4, 5, 1, 2, 3]. The original list must not change.",
+ "starter": "def rotate_list(items, k):\n    pass\n",
+ "solution": "def rotate_list(items, k):\n    if not items:\n        return []\n    k %= len(items)\n    return items[len(items) - k:] + items[:len(items) - k]\n",
+ "cases": [
+  {
+   "args": [
+    [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    2
+   ],
+   "expected": [
+    4,
+    5,
+    1,
+    2,
+    3
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [],
+    3
+   ],
+   "expected": [],
+   "tag": "empty"
+  },
+  {
+   "args": [
+    [
+     1,
+     2,
+     3
+    ],
+    0
+   ],
+   "expected": [
+    1,
+    2,
+    3
+   ],
+   "tag": "zero"
+  },
+  {
+   "args": [
+    [
+     1,
+     2,
+     3
+    ],
+    3
+   ],
+   "expected": [
+    1,
+    2,
+    3
+   ],
+   "tag": "edge"
+  },
+  {
+   "args": [
+    [
+     1,
+     2,
+     3
+    ],
+    7
+   ],
+   "expected": [
+    3,
+    1,
+    2
+   ],
+   "tag": "large"
+  },
+  {
+   "args": [
+    [
+     1
+    ],
+    5
+   ],
+   "expected": [
+    1
+   ],
+   "tag": "single"
+  },
+  {
+   "args": [
+    [
+     1,
+     2,
+     3,
+     4
+    ],
+    1
+   ],
+   "expected": [
+    4,
+    1,
+    2,
+    3
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ],
+    13
+   ],
+   "expected": [
+    7,
+    8,
+    9,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "tag": "large",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Try [1, 2, 3, 4, 5] with k = 1 by hand, then k = 2. What happens to the last items?",
+  "Rotating by the length of the list brings you back to the start, so rotating by 7 on a list of 3 is the same as rotating by 1. Which operator gives you the remainder?",
+  "Plan: if the list is empty return []; reduce k with k % len(items); the answer is the last k items followed by the rest. Slices like items[-k:] and items[:-k] help, but beware of k = 0."
+ ],
+ "edge_hints": {
+  "empty": "Taking a remainder by len(items) fails for an empty list (division by zero). Handle the empty list first.",
+  "zero": "k = 0 means no change. Watch out: items[-0:] is the WHOLE list, not an empty one.",
+  "edge": "Rotating by exactly the length of the list gives back the same list.",
+  "large": "k bigger than the list: reduce it first with %."
+ }
+}

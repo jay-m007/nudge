@@ -1,0 +1,139 @@
+{
+ "id": "remove_duplicates",
+ "level": 2,
+ "title": "Remove duplicates",
+ "concepts": [
+  "lists",
+  "sets",
+  "order"
+ ],
+ "function": "remove_duplicates",
+ "prompt": "Write remove_duplicates(items) that returns a new list with repeated items removed, keeping the first occurrence of each and the original order.\nThe list you are given must not be changed.",
+ "starter": "def remove_duplicates(items):\n    pass\n",
+ "solution": "def remove_duplicates(items):\n    seen = set()\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.add(item)\n            result.append(item)\n    return result\n",
+ "cases": [
+  {
+   "args": [
+    [
+     1,
+     2,
+     2,
+     3,
+     1
+    ]
+   ],
+   "expected": [
+    1,
+    2,
+    3
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    []
+   ],
+   "expected": [],
+   "tag": "empty"
+  },
+  {
+   "args": [
+    [
+     5,
+     5,
+     5
+    ]
+   ],
+   "expected": [
+    5
+   ],
+   "tag": "duplicates"
+  },
+  {
+   "args": [
+    [
+     "b",
+     "a",
+     "b",
+     "c"
+    ]
+   ],
+   "expected": [
+    "b",
+    "a",
+    "c"
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     3,
+     2,
+     1
+    ]
+   ],
+   "expected": [
+    3,
+    2,
+    1
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    [
+     4,
+     4,
+     3,
+     3,
+     2,
+     2,
+     1
+    ]
+   ],
+   "expected": [
+    4,
+    3,
+    2,
+    1
+   ],
+   "tag": "duplicates",
+   "hidden": true
+  },
+  {
+   "args": [
+    [
+     1,
+     2,
+     3,
+     4,
+     5,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   ],
+   "expected": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "tag": "duplicates",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Walk through the list by hand with a pencil: for each item, how do you know whether you've seen it before?",
+  "A set remembers what it has seen and answers 'is x in it?' quickly. But a set doesn't keep order, so you also need a list for the result.",
+  "Plan: seen = empty set; result = empty list; for each item, if it isn't in seen, add it to both seen and result; return result. Don't use list(set(items)): it loses the order."
+ ],
+ "edge_hints": {
+  "duplicates": "When everything is repeated, only the first of each should remain. Check you add an item to the result only the first time.",
+  "empty": "An empty list stays an empty list."
+ }
+}

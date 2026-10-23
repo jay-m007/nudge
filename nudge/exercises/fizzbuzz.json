@@ -1,0 +1,152 @@
+{
+ "id": "fizzbuzz",
+ "level": 1,
+ "title": "FizzBuzz",
+ "concepts": [
+  "loops",
+  "conditionals",
+  "modulo"
+ ],
+ "function": "fizzbuzz",
+ "prompt": "Write fizzbuzz(n) that returns a list for the numbers 1 to n. For each number: 'FizzBuzz' if it is divisible by 3 and by 5, 'Fizz' if only by 3, 'Buzz' if only by 5, otherwise the number as text, e.g. '7'.",
+ "starter": "def fizzbuzz(n):\n    pass\n",
+ "solution": "def fizzbuzz(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result\n",
+ "cases": [
+  {
+   "args": [
+    5
+   ],
+   "expected": [
+    "1",
+    "2",
+    "Fizz",
+    "4",
+    "Buzz"
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    15
+   ],
+   "expected": [
+    "1",
+    "2",
+    "Fizz",
+    "4",
+    "Buzz",
+    "Fizz",
+    "7",
+    "8",
+    "Fizz",
+    "Buzz",
+    "11",
+    "Fizz",
+    "13",
+    "14",
+    "FizzBuzz"
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    1
+   ],
+   "expected": [
+    "1"
+   ],
+   "tag": "single"
+  },
+  {
+   "args": [
+    0
+   ],
+   "expected": [],
+   "tag": "zero"
+  },
+  {
+   "args": [
+    3
+   ],
+   "expected": [
+    "1",
+    "2",
+    "Fizz"
+   ],
+   "tag": "basic"
+  },
+  {
+   "args": [
+    30
+   ],
+   "expected": [
+    "1",
+    "2",
+    "Fizz",
+    "4",
+    "Buzz",
+    "Fizz",
+    "7",
+    "8",
+    "Fizz",
+    "Buzz",
+    "11",
+    "Fizz",
+    "13",
+    "14",
+    "FizzBuzz",
+    "16",
+    "17",
+    "Fizz",
+    "19",
+    "Buzz",
+    "Fizz",
+    "22",
+    "23",
+    "Fizz",
+    "Buzz",
+    "26",
+    "Fizz",
+    "28",
+    "29",
+    "FizzBuzz"
+   ],
+   "tag": "large",
+   "hidden": true
+  },
+  {
+   "args": [
+    16
+   ],
+   "expected": [
+    "1",
+    "2",
+    "Fizz",
+    "4",
+    "Buzz",
+    "Fizz",
+    "7",
+    "8",
+    "Fizz",
+    "Buzz",
+    "11",
+    "Fizz",
+    "13",
+    "14",
+    "FizzBuzz",
+    "16"
+   ],
+   "tag": "basic",
+   "hidden": true
+  }
+ ],
+ "hints": [
+  "Take the numbers 1 to 15 and write down by hand what each should become. Which number is the trickiest?",
+  "A number divisible by both 3 and 5 also matches the 'only 3' test. Does the order of your checks matter?",
+  "Plan: loop i from 1 to n inclusive; check the 'both' case first, then 3, then 5, else the number as text; collect the results in a list and return it."
+ ],
+ "edge_hints": {
+  "zero": "n = 0 means no numbers at all, so the list is empty.",
+  "single": "For n = 1 the list has one item and it is the text '1', not the number 1."
+ }
+}
