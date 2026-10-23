@@ -20,11 +20,16 @@ def home() -> Path:
 
 
 class Progress:
-    def __init__(self, path: Path | None = None, today: date | None = None):
+    def __init__(self, path: Path | None = None, today: date | None = None, data: dict | None = None):
+        """With ``data`` the progress lives in memory only (the browser version keeps it in localStorage)."""
+        self.memory = data is not None
         self.path = path or home() / "progress.json"
         self.today = today or date.today()
         self.data: dict = {"exercises": {}, "concept_trouble": {}}
-        if self.path.exists():
+        if self.memory:
+            if isinstance(data.get("exercises"), dict):
+                self.data.update(data)
+        elif self.path.exists():
             try:
                 loaded = json.loads(self.path.read_text(encoding="utf-8"))
                 if isinstance(loaded, dict) and isinstance(loaded.get("exercises"), dict):
@@ -38,6 +43,8 @@ class Progress:
 
     # -- storage
     def save(self) -> None:
+        if self.memory:
+            return
         self.path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self.path.with_suffix(".tmp")
         tmp.write_text(json.dumps(self.data, indent=1), encoding="utf-8")
