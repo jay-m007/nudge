@@ -8,7 +8,9 @@ import copy
 import io
 import json
 import math
+import os
 import sys
+import threading
 import traceback
 
 FILENAME = "<student>"
@@ -81,7 +83,7 @@ def run_job(job, out, use_alarm=False):
     try:
         import signal
 
-        if use_alarm and hasattr(signal, "setitimer"):
+        if use_alarm and hasattr(signal, "setitimer") and not os.environ.get("NUDGE_FORCE_WATCHDOG"):
 
             def on_alarm(signum, frame):
                 raise CaseTimeout()
@@ -91,6 +93,44 @@ def run_job(job, out, use_alarm=False):
 
     except Exception:
         pass
+
+    limit = job.get("limit", 2.0)
+    watch = use_alarm and alarm is None  # no SIGALRM (Windows): a watchdog thread ends the run instead
+    main_id = threading.get_ident()
+    state = {"i": None, "timer": None, "tag": ""}
+
+    def fire():
+        line = None
+        frame = sys._current_frames().get(main_id)
+        while frame is not None:
+            if frame.f_code.co_filename == FILENAME:
+                line = frame.f_lineno
+                break
+            frame = frame.f_back
+        err = {"type": "Timeout", "msg": "took too long", "line": line}
+        if state["i"] is None:
+            emit(out, {"kind": "load_error", "error": err})
+        else:
+            emit(out, {"kind": "case", "i": state["i"], "tag": state["tag"], "ok": False, "error": err, "printed": ""})
+            emit(out, {"kind": "stopped"})
+        out.flush()
+        os._exit(0)
+
+    def arm():
+        if alarm:
+            alarm.setitimer(alarm.ITIMER_REAL, limit)
+        elif watch:
+            t = threading.Timer(limit, fire)
+            t.daemon = True
+            state["timer"] = t
+            t.start()
+
+    def disarm():
+        if alarm:
+            alarm.setitimer(alarm.ITIMER_REAL, 0)
+        elif state["timer"] is not None:
+            state["timer"].cancel()
+            state["timer"] = None
 
     buf = io.StringIO()
     sys.stdout = buf
@@ -106,11 +146,9 @@ def run_job(job, out, use_alarm=False):
         emit(out, {"kind": "syntax", "msg": "Python could not read the file (" + (str(e)[:80] or type(e).__name__) + ")", "line": None, "offset": None, "text": ""})
         return
     try:
-        if alarm:
-            alarm.setitimer(alarm.ITIMER_REAL, job.get("limit", 2.0))
+        arm()
         exec(code, ns)
-        if alarm:
-            alarm.setitimer(alarm.ITIMER_REAL, 0)
+        disarm()
     except CaseTimeout:
         sys.stdout = prev_stdout
         emit(out, {"kind": "load_error", "error": {"type": "Timeout", "msg": "the file never finished loading", "line": None}})
@@ -135,11 +173,10 @@ def run_job(job, out, use_alarm=False):
         sys.stdout = buf
         res = {"kind": "case", "i": i, "tag": case.get("tag", "")}
         try:
-            if alarm:
-                alarm.setitimer(alarm.ITIMER_REAL, job.get("limit", 2.0))
+            state["i"], state["tag"] = i, case.get("tag", "")
+            arm()
             got = fn(*args)
-            if alarm:
-                alarm.setitimer(alarm.ITIMER_REAL, 0)
+            disarm()
             g = norm(got)
             res["got"] = g if _jsonable(g) else repr(got)
             res["type"] = type(got).__name__
@@ -150,12 +187,10 @@ def run_job(job, out, use_alarm=False):
         except CaseTimeout:
             res.update(ok=False, error={"type": "Timeout", "msg": "took too long", "line": _current_line()})
         except RecursionError as e:
-            if alarm:
-                alarm.setitimer(alarm.ITIMER_REAL, 0)
+            disarm()
             res.update(ok=False, error=error_info(e))
         except BaseException as e:  # noqa: BLE001
-            if alarm:
-                alarm.setitimer(alarm.ITIMER_REAL, 0)
+            disarm()
             res.update(ok=False, error=error_info(e))
         printed = buf.getvalue()
         sys.stdout = prev_stdout
