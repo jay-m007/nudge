@@ -6,6 +6,26 @@ EXAMPLES: dict[str, tuple[str, str]] = {
         "Every block header ends with a colon",
         "def shout(word):\n    if len(word) > 3:      # <- colon here\n        return word.upper()\n    return word",
     ),
+    "elif": (
+        "Python spells else-if as one word, elif",
+        "if score >= 90:\n    grade = 'A'\nelif score >= 75:      # not 'else if'\n    grade = 'B'\nelse:\n    grade = 'C'",
+    ),
+    "boolean_words": (
+        "Python uses words for logic: and, or, not",
+        "if age >= 18 and has_ticket:\n    print('enter')\nif not has_ticket or age < 5:\n    print('wait')",
+    ),
+    "increment": (
+        "There is no ++ in Python: add with +=",
+        "count = 0\ncount += 1      # now 1\ncount -= 1      # back to 0",
+    ),
+    "incomplete_output": (
+        "After a loop, finish what you were still holding",
+        "def join_words(words):\n    out = ''\n    for w in words:\n        out += w + ' '\n    return out.strip()      # tidy up the leftover space after the loop",
+    ),
+    "discarded_result": (
+        "Calls like .lower() or sorted() return a NEW value; they don't change the original",
+        "name = '  Ana '\nname.strip()            # computed, then thrown away\nname = name.strip()     # now name is 'Ana'",
+    ),
     "assign_vs_compare": (
         "One = stores a value, two == ask a question",
         "price = 40            # store 40 in price\nif price == 40:       # ask: is price equal to 40?\n    print('cheap')",

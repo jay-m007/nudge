@@ -244,7 +244,6 @@ def main():
     s = summarize(rows, per_op)
     print(f"mutants: {s['mutants']}   killed by tests: {s['killed']} ({s['kill_rate']:.0%})   survived: {s['survived']}")
     print(f"top hint names a specific cause: {s['specific_rate']:.0%} of killed mutants")
-    print(f"code-shape hints that name a line: {s['line_given']}; of those, the line is the changed one (+/-1): {s['line_hit_rate']:.0%}")
     print(f"hints (levels 1-4) that repeat a line of the solution: {s['leaks']}")
     print("\nby mutation:")
     for k, v in s["by_operator"].items():
