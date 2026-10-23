@@ -319,3 +319,12 @@ def test_cli_validate_and_list(workdir, capsys):
 def test_cli_reads_files_saved_with_a_bom(workdir, capsys):
     (workdir / "total.py").write_bytes(b"\xef\xbb\xbf" + EXS["total"]["solution"].encode())
     assert main(["check", "total"]) == 0
+
+
+def test_watchdog_timer_stops_a_hung_program_like_the_alarm_does(monkeypatch):
+    """Windows has no SIGALRM; force the thread-based path used there and check it behaves the same."""
+    monkeypatch.setenv("NUDGE_FORCE_WATCHDOG", "1")
+    r = run("def total(numbers):\n    while True:\n        pass\n", TOTAL, limit=0.4)
+    assert len(r.cases) == 1 and r.cases[0].error["type"] == "Timeout" and r.cases[0].error["line"] in (2, 3)
+    r = run("while True:\n    pass\ndef total(numbers):\n    return 0\n", TOTAL, limit=0.4)
+    assert r.status == "load_error" and r.info["error"]["type"] == "Timeout"

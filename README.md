@@ -98,8 +98,7 @@ Add your own: copy a file in `nudge/exercises/`, or add a definition to `tools/b
 ## Limits
 
 - **Rules only.** It recognises common mistakes. About a quarter of the held-out bugs got a generic hint (grade C), and unusual mistakes will too.
-- **Not a security sandbox.** Submissions run in a separate process with a time limit (and a memory limit on Linux/macOS). That protects against your own infinite loop, not against hostile code. Use it for your own practice.
-- **Windows:** a runaway loop is stopped after 20 seconds for the whole run instead of 2 seconds per test.
+- **Not a security sandbox.** Submissions run in a separate process with a time limit (and a memory limit on Linux/macOS; on Windows a watchdog thread stops the run instead of a signal). That protects against your own infinite loop, not against hostile code. Use it for your own practice.
 - **Python only**, functions that take and return plain data (numbers, text, lists, dictionaries).
 - Float versus int slips inside a function (for example `n / 10` instead of `n // 10`) can go unnoticed when the final answer is the same.
 - Anyone can read the solutions in `nudge/exercises/*.json`. The lock is a nudge, not a safe.
