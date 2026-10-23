@@ -74,9 +74,9 @@ Two checks, both reproducible. Numbers are from this repository's code.
 
 | Grade | Meaning | First run | After fixes |
 |---|---|---|---|
-| A | leads to the real cause | 37 (46%) | 47 (58%) |
-| B | relevant, not decisive | 10 (12%) | 10 (12%) |
-| C | generic but harmless | 27 (33%) | 23 (28%) |
+| A | leads to the real cause | 37 (46%) | 48 (59%) |
+| B | relevant, not decisive | 10 (12%) | 13 (16%) |
+| C | generic but harmless | 27 (33%) | 19 (23%) |
 | D | misleading | 7 (9%) | 1 (1%) |
 
 No hint revealed corrected code. **Read the second column carefully:** I fixed the rules after seeing which hints were misleading, so it is no longer a blind result and is optimistic. The first column is the honest estimate. Both gradings were done by an AI model, not by teachers or students.
