@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nudge - Python practice with hints</title>
+<meta name="description" content="Practise Python in your browser. When you're stuck, Nudge gives one small hint at a time instead of the answer. Nothing leaves your computer.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e6b73'/%3E%3Cpath d='M10 6v20M22 6v20M10 11h12M10 16h12M10 21h12' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="vendor/codemirror/codemirror.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#editor-wrap">Skip to the code editor</a>
+<header class="top">
+  <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="side">Exercises</button>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M10 6v20M22 6v20M10 11h12M10 16h12M10 21h12"/></svg>
+    <span class="name">Nudge</span>
+    <span class="tag">hints that nudge, not answers that spoil</span>
+  </div>
+  <div class="engine" id="engine" role="status" aria-live="polite"><span class="dot"></span><span id="engine-text">Loading Python…</span></div>
+  <a class="gh" href="https://github.com/jay-m007/nudge">Source on GitHub</a>
+</header>
+
+<div class="app">
+  <nav class="side" id="side" aria-label="Exercises">
+    <div class="summary" id="summary"></div>
+    <div class="next" id="next"></div>
+    <div id="list"></div>
+    <div class="backup">
+      <h2>Your progress</h2>
+      <p>Saved in this browser only. Nothing is uploaded.</p>
+      <div class="row">
+        <button class="ghost" id="export-btn">Download backup</button>
+        <button class="ghost" id="import-btn">Restore backup</button>
+        <button class="ghost danger" id="wipe-btn">Clear everything</button>
+      </div>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+      <p class="note" id="backup-note" role="status"></p>
+    </div>
+  </nav>
+
+  <main class="work" id="work">
+    <div id="banner" class="banner" role="alert" hidden></div>
+    <div class="head">
+      <h1 id="title"></h1>
+      <p class="meta" id="meta"></p>
+    </div>
+    <div class="prompt" id="prompt"></div>
+    <pre class="examples" id="examples" aria-label="Examples"></pre>
+    <div class="editor-wrap" id="editor-wrap">
+      <textarea id="code" aria-label="Your Python code"></textarea>
+    </div>
+    <p class="keys">Ctrl+Enter runs the tests. Press Esc, then Tab, to leave the editor.</p>
+    <div class="actions">
+      <button class="primary" id="run-btn" disabled>Run tests</button>
+      <button class="ghost" id="restart-btn">Start over</button>
+      <span class="busy" id="busy" role="status" aria-live="polite"></span>
+    </div>
+  </main>
+
+  <aside class="feedback" aria-label="Feedback">
+    <section class="results" id="results" aria-live="polite">
+      <h2>Test results</h2>
+      <p class="empty">Write your answer, then run the tests. You'll see what went wrong here.</p>
+    </section>
+    <section class="ladder-panel" aria-labelledby="ladder-h">
+      <h2 id="ladder-h">Hint ladder</h2>
+      <p class="ladder-intro">One rung at a time. Each hint tells you a little more, and the next one unlocks after you run the tests again.</p>
+      <ol class="ladder" id="ladder"></ol>
+      <div class="ladder-actions">
+        <button class="primary" id="hint-btn" disabled>Give me a hint</button>
+        <button class="ghost" id="again-btn" hidden>Show the current hint again</button>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<script src="vendor/codemirror/codemirror.js"></script>
+<script src="vendor/codemirror/mode/python.js"></script>
+<script src="vendor/codemirror/addon/matchbrackets.js"></script>
+<script src="vendor/codemirror/addon/closebrackets.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
