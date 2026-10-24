@@ -26,6 +26,10 @@ PY_FILES = ["__init__.py", "_harness.py", "concepts.py", "diagnose.py", "hints.p
 def main() -> int:
     from nudge import exercises as exlib
 
+    npm = shutil.which("npm")  # on Windows this finds npm.cmd, which a bare "npm" would not
+    if not npm:
+        print("npm was not found. Install Node.js from https://nodejs.org, open a new terminal and try again.")
+        return 1
     if SITE.exists():
         shutil.rmtree(SITE)
     SITE.mkdir()
@@ -44,8 +48,8 @@ def main() -> int:
     (SITE / "exercises.json").write_text(json.dumps(exercises, separators=(",", ":")), encoding="utf-8")
 
     with tempfile.TemporaryDirectory() as tmp:
-        subprocess.run(["npm", "init", "-y"], cwd=tmp, check=True, capture_output=True)
-        subprocess.run(["npm", "install", "--silent", *NPM], cwd=tmp, check=True)
+        subprocess.run([npm, "init", "-y"], cwd=tmp, check=True, capture_output=True)
+        subprocess.run([npm, "install", "--silent", *NPM], cwd=tmp, check=True)
         nm = Path(tmp) / "node_modules"
         vendor = SITE / "vendor"
         (vendor / "pyodide").mkdir(parents=True)
@@ -65,6 +69,11 @@ def main() -> int:
             for w in files:
                 n = f"{pkg}-latin-{w}-normal.woff2"
                 shutil.copy(nm / "@fontsource" / pkg / "files" / n, fonts / n)
+    needed = ["vendor/pyodide/pyodide.asm.wasm", "vendor/codemirror/codemirror.js", "vendor/fonts/jetbrains-mono-latin-400-normal.woff2"]
+    missing = [n for n in needed if not (SITE / n).exists()]
+    if missing:
+        print("The build is incomplete, missing:", ", ".join(missing))
+        return 1
     (SITE / ".nojekyll").write_text("")
     size = sum(f.stat().st_size for f in SITE.rglob("*") if f.is_file()) / 1e6
     print(f"Built {SITE} ({size:.1f} MB). Try it: python -m http.server -d site 8000")
