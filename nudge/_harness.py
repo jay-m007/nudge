@@ -11,6 +11,7 @@ import math
 import os
 import sys
 import threading
+import time
 import traceback
 
 FILENAME = "<student>"
@@ -57,7 +58,7 @@ def error_info(exc):
     return {"type": type(exc).__name__, "msg": str(exc)[:300], "line": line}
 
 
-class CaseTimeout(Exception):
+class CaseTimeout(BaseException):  # not an Exception, so a student's `except Exception:` can't swallow it
     pass
 
 
@@ -73,10 +74,11 @@ def main():
     run_job(job, sys.stdout, use_alarm=True)
 
 
-def run_job(job, out, use_alarm=False):
+def run_job(job, out, use_alarm=False, use_trace=False):
     """Run one job, writing one JSON line per event to ``out``.
 
     Called as a script by runner.py: a separate process, with a per-case alarm where the OS has one.
+    With ``use_trace`` (the browser build, where there are no signals) a trace hook checks the clock instead.
     """
     prev_stdout = sys.stdout
     alarm = None
@@ -116,8 +118,22 @@ def run_job(job, out, use_alarm=False):
         out.flush()
         os._exit(0)
 
+    clock = {"deadline": 0.0, "n": 0}
+
+    def local_trace(frame, event, arg):
+        clock["n"] += 1
+        if clock["n"] % 500 == 0 and time.monotonic() > clock["deadline"]:
+            raise CaseTimeout()
+        return local_trace
+
+    def global_trace(frame, event, arg):
+        return local_trace if frame.f_code.co_filename == FILENAME else None
+
     def arm():
-        if alarm:
+        if use_trace:
+            clock["deadline"] = time.monotonic() + limit
+            sys.settrace(global_trace)
+        elif alarm:
             alarm.setitimer(alarm.ITIMER_REAL, limit)
         elif watch:
             t = threading.Timer(limit, fire)
@@ -126,7 +142,9 @@ def run_job(job, out, use_alarm=False):
             t.start()
 
     def disarm():
-        if alarm:
+        if use_trace:
+            sys.settrace(None)
+        elif alarm:
             alarm.setitimer(alarm.ITIMER_REAL, 0)
         elif state["timer"] is not None:
             state["timer"].cancel()
@@ -150,6 +168,7 @@ def run_job(job, out, use_alarm=False):
         exec(code, ns)
         disarm()
     except CaseTimeout:
+        disarm()
         sys.stdout = prev_stdout
         emit(out, {"kind": "load_error", "error": {"type": "Timeout", "msg": "the file never finished loading", "line": None}})
         return
@@ -185,7 +204,9 @@ def run_job(job, out, use_alarm=False):
             if res["mutated"]:
                 res["ok"] = False
         except CaseTimeout:
-            res.update(ok=False, error={"type": "Timeout", "msg": "took too long", "line": _current_line()})
+            line = _current_line()
+            disarm()
+            res.update(ok=False, error={"type": "Timeout", "msg": "took too long", "line": line})
         except RecursionError as e:
             disarm()
             res.update(ok=False, error=error_info(e))

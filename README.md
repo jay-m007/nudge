@@ -20,6 +20,20 @@ Hint 2 of 7: What to think about
 A return inside a loop ends the whole function the first time it runs.
 ```
 
+## Try it in your browser
+
+**Live: https://jay-m007.github.io/nudge/** (no install, nothing to sign up for)
+
+![Nudge in the browser: failing tests on the right, the hint ladder below them](docs/app-light.png)
+
+The same engine runs in the page: Python itself is loaded with [Pyodide](https://pyodide.org) and runs in a Web Worker, so an infinite loop in your code can never freeze the page. Your code and progress stay in your browser (localStorage); nothing is sent anywhere, and the built page makes no request to any other server. There is a dark mode, a phone layout, and a backup/restore button for your progress.
+
+- The first visit downloads about 10 MB (Python); after that the browser keeps it.
+- A loop is stopped after 2 seconds per test, and the line it was stuck on is highlighted. If something hangs inside one single built-in call, the page restarts Python after 5 seconds.
+- The solutions are inside the page's data, like in the command-line package, so a determined student can read them. The lock is a nudge to try first, not a vault.
+
+Build it yourself: `python tools/build_web.py` (needs Node once), then `python -m http.server -d site`.
+
 ## Why this exists
 
 Coding schools such as WhiteHat Jr, Dev Bootcamp, The Iron Yard and Juni Learning died of the same thing: the help students needed came from human tutors, and tutors cost more than students paid. Nudge replaces the part of a tutor that answers "why does my code fail?" with rules that read the error, the wrong answers and the code, so it costs nothing to run and works without internet.
@@ -106,6 +120,9 @@ Add your own: copy a file in `nudge/exercises/`, or add a definition to `tools/b
 - No study with real learners has been done. Whether graded hints teach better than other feedback is untested here.
 
 ## Development
+
+Browser version: `tools/build_web.py` writes `site/`; `tests/test_web_e2e.py` drives it in Chromium (`pip install playwright && playwright install chromium`, then `pytest tests/test_web_e2e.py`). Pushing to `main` runs `.github/workflows/pages.yml`, which tests and deploys the site.
+
 
 ```bash
 python -m pip install -e ".[dev]"

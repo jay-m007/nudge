@@ -59,6 +59,8 @@ def _show_case(ex: dict, c) -> None:
         where = f" on line {e['line']}" if e.get("line") else ""
         msg = f": {e['msg']}" if e.get("msg") else ""
         out(_clip(f"         {e['type']}{where}{msg}", 110))
+    elif c.mutated:
+        out("         your function changed the list it was given; work on a copy and leave the original alone")
     else:
         out(_clip(f"         expected {c.expected!r}, got {c.got!r}", 110))
         if c.printed.strip():

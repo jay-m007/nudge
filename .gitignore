@@ -6,3 +6,4 @@ web/node_modules/
 web/.next/
 web/out/
 heldout_hints.json
+site/
